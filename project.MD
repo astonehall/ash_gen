@@ -1,3 +1,7 @@
+## Current Version
+
+- 0.0.1
+
 ## Project Goal - Long Term
 
 - Create python backend that can run SDXL Illustrious models to generate images

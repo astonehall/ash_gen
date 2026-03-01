@@ -1,6 +1,8 @@
 # AshGen
 
-MVP foundation for a cross-platform SDXL image generation app.
+SDXL image generation app using Python in the backend and (eventually) a nice simple user interface.
+
+Current version: **0.0.1**
 
 ## Current Status
 
@@ -50,8 +52,13 @@ To test real image generation with a local checkpoint:
 
 The API will write a PNG image to `outputs/` when model inference succeeds.
 
-## Next Steps
+## Changelog
 
-- Add queueing + cancellation for long-running jobs.
-- Add minimal cross-platform desktop UI shell.
-- Add auth, gallery, and history after core generation is stable.
+### 0.0.1
+
+- Built FastAPI backend foundation with health and generation endpoints.
+- Added stub and real SDXL single-file checkpoint generation paths.
+- Added model diagnostics endpoint (`/v1/model/info`).
+- Added startup validation for checkpoint configuration when real mode is enabled.
+- Added optional API key protection (`X-API-Key`) for `/v1` endpoints.
+- Improved project portability with repo-relative paths and environment-driven config.
