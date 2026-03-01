@@ -16,6 +16,11 @@ outputs/
 
 # Large model artifacts
 models/checkpoints/*.safetensors
+models/checkpoints/*.ckpt
+models/checkpoints/*.pt
+models/checkpoints/*.pth
+models/checkpoints/*.bin
+models/checkpoints/*.onnx
 
 # OS/editor
 .DS_Store
