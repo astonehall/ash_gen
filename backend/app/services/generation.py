@@ -8,7 +8,7 @@ from random import randint
 from typing import Any
 
 from ..config import settings
-from ..schemas import GenerateRequest
+from ..schemas import GenerateRequest, ModelInfoResponse
 
 
 @dataclass
@@ -60,6 +60,33 @@ class ImageGenerationService:
             image_path=str(target),
             seed=seed,
             used_stub=False,
+        )
+
+    def get_model_info(self) -> ModelInfoResponse:
+        resolved_checkpoint_path: Path | None = None
+        checkpoint_exists = False
+
+        if settings.model_checkpoint:
+            candidate = Path(settings.model_checkpoint)
+            if not candidate.is_absolute():
+                candidate = settings.checkpoints_dir / candidate
+            resolved_checkpoint_path = candidate
+            checkpoint_exists = candidate.exists() and candidate.is_file()
+
+        resolved_device = settings.device.lower().strip()
+        if resolved_device == "auto":
+            resolved_device = self._detect_device_without_error()
+
+        return ModelInfoResponse(
+            used_stub=settings.enable_stub_generator,
+            model_id=settings.model_id,
+            checkpoints_dir=str(settings.checkpoints_dir),
+            model_checkpoint=settings.model_checkpoint,
+            resolved_checkpoint_path=str(resolved_checkpoint_path) if resolved_checkpoint_path else None,
+            checkpoint_exists=checkpoint_exists,
+            configured_device=settings.device,
+            resolved_device=resolved_device,
+            pipeline_loaded=self._pipeline is not None,
         )
 
     @staticmethod
@@ -124,6 +151,14 @@ class ImageGenerationService:
             return "mps"
 
         return "cpu"
+
+    def _detect_device_without_error(self) -> str:
+        try:
+            import torch
+        except Exception:
+            return "cpu"
+
+        return self._resolve_torch_device(torch)
 
     def _write_stub_image(self, image_id: str, prompt: str, seed: int) -> Path:
         target = self.output_dir / f"{image_id}.txt"

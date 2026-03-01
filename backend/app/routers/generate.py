@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from ..schemas import GenerateRequest, GenerateResponse
+from ..schemas import GenerateRequest, GenerateResponse, ModelInfoResponse
 from ..services.generation import generation_service
 
 router = APIRouter(prefix="/v1", tags=["generation"])
@@ -15,3 +15,8 @@ def generate(payload: GenerateRequest) -> GenerateResponse:
         seed=result.seed,
         used_stub=result.used_stub,
     )
+
+
+@router.get("/model/info", response_model=ModelInfoResponse)
+def model_info() -> ModelInfoResponse:
+    return generation_service.get_model_info()

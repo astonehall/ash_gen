@@ -16,3 +16,15 @@ class GenerateResponse(BaseModel):
     image_path: str
     seed: int
     used_stub: bool
+
+
+class ModelInfoResponse(BaseModel):
+    used_stub: bool
+    model_id: str
+    checkpoints_dir: str
+    model_checkpoint: str | None
+    resolved_checkpoint_path: str | None
+    checkpoint_exists: bool
+    configured_device: str
+    resolved_device: str
+    pipeline_loaded: bool

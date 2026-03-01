@@ -25,6 +25,8 @@ MVP foundation for a cross-platform SDXL image generation app.
 
 - Health check:
   - `curl http://127.0.0.1:8000/health`
+- Model info:
+  - `curl http://127.0.0.1:8000/v1/model/info`
 - Generate stub output:
   - `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -d '{"prompt":"portrait of a wizard"}'`
 
