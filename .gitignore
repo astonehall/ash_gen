@@ -11,16 +11,13 @@ venv/
 # Environment files
 .env
 
-# Outputs
-outputs/
+# Outputs (keep folder, ignore generated files)
+outputs/*
+!outputs/.gitkeep
 
-# Large model artifacts
-models/checkpoints/*.safetensors
-models/checkpoints/*.ckpt
-models/checkpoints/*.pt
-models/checkpoints/*.pth
-models/checkpoints/*.bin
-models/checkpoints/*.onnx
+# Model checkpoints (keep folder, ignore all checkpoint files)
+models/checkpoints/*
+!models/checkpoints/.gitkeep
 
 # OS/editor
 .DS_Store
