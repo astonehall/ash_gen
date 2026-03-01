@@ -6,7 +6,7 @@
 - [x] Typed request/response schema
 - [x] Config and environment handling
 - [x] Stub generation service with deterministic output contracts
-- [ ] SDXL runtime integration (single model)
+- [x] SDXL runtime integration (single model)
 - [ ] Basic job status endpoint
 
 ## Phase 2 - Core Product

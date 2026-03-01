@@ -62,6 +62,12 @@ class ImageGenerationService:
             used_stub=False,
         )
 
+    def validate_startup_configuration(self) -> None:
+        if settings.enable_stub_generator:
+            return
+
+        self._resolve_checkpoint_path()
+
     def get_model_info(self) -> ModelInfoResponse:
         resolved_checkpoint_path: Path | None = None
         checkpoint_exists = False

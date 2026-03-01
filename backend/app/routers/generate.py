@@ -1,14 +1,21 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..schemas import GenerateRequest, GenerateResponse, ModelInfoResponse
+from ..security import require_api_key
 from ..services.generation import generation_service
 
-router = APIRouter(prefix="/v1", tags=["generation"])
+router = APIRouter(prefix="/v1", tags=["generation"], dependencies=[Depends(require_api_key)])
 
 
 @router.post("/generate", response_model=GenerateResponse)
 def generate(payload: GenerateRequest) -> GenerateResponse:
-    result = generation_service.generate(payload)
+    try:
+        result = generation_service.generate(payload)
+    except (ValueError, FileNotFoundError) as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
+
     return GenerateResponse(
         image_id=result.image_id,
         image_path=result.image_path,

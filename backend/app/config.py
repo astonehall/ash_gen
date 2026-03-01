@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     model_id: str = "stabilityai/stable-diffusion-xl-base-1.0"
     device: str = "auto"
     enable_stub_generator: bool = True
+    enable_api_key_auth: bool = False
+    api_key: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).resolve().parents[1] / ".env"),

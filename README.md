@@ -5,8 +5,8 @@ MVP foundation for a cross-platform SDXL image generation app.
 ## Current Status
 
 - Backend API scaffold is ready with FastAPI.
-- Generation endpoint is live with a stub output mode.
-- Structure is prepared to replace the stub with SDXL runtime.
+- Generation endpoint supports both stub mode and real SDXL single-file checkpoints.
+- Startup validation checks model checkpoint configuration when stub mode is disabled.
 
 ## Quick Start (Linux Mint 22)
 
@@ -18,6 +18,7 @@ MVP foundation for a cross-platform SDXL image generation app.
 3. Configure environment:
    - `cp backend/.env.example backend/.env`
    - Set `CHECKPOINTS_DIR` and `MODEL_CHECKPOINT` in `backend/.env` if you want a local model file (use repo-relative paths, not machine-specific absolute paths).
+   - Optional API auth: set `ENABLE_API_KEY_AUTH=true` and `API_KEY=<your-secret>`.
 4. Run the API from project root:
    - `uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000`
 
@@ -26,9 +27,11 @@ MVP foundation for a cross-platform SDXL image generation app.
 - Health check:
   - `curl http://127.0.0.1:8000/health`
 - Model info:
-  - `curl http://127.0.0.1:8000/v1/model/info`
+   - `curl http://127.0.0.1:8000/v1/model/info`
+   - If auth is enabled: `curl -H "X-API-Key: <your-secret>" http://127.0.0.1:8000/v1/model/info`
 - Generate stub output:
   - `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -d '{"prompt":"portrait of a wizard"}'`
+   - If auth is enabled: `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -H "X-API-Key: <your-secret>" -d '{"prompt":"portrait of a wizard"}'`
 
 The generate route creates a text artifact in `outputs/` as placeholder output. This keeps API contracts stable while SDXL runtime is integrated.
 
@@ -49,7 +52,6 @@ The API will write a PNG image to `outputs/` when model inference succeeds.
 
 ## Next Steps
 
-- Wire real SDXL pipeline behind the generation service.
 - Add queueing + cancellation for long-running jobs.
 - Add minimal cross-platform desktop UI shell.
 - Add auth, gallery, and history after core generation is stable.
