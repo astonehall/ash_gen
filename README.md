@@ -27,11 +27,11 @@ MVP foundation for a cross-platform SDXL image generation app.
 - Health check:
   - `curl http://127.0.0.1:8000/health`
 - Model info:
-   - `curl http://127.0.0.1:8000/v1/model/info`
-   - If auth is enabled: `curl -H "X-API-Key: <your-secret>" http://127.0.0.1:8000/v1/model/info`
+  - `curl http://127.0.0.1:8000/v1/model/info`
+  - If auth is enabled: `curl -H "X-API-Key: <your-secret>" http://127.0.0.1:8000/v1/model/info`
 - Generate stub output:
   - `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -d '{"prompt":"portrait of a wizard"}'`
-   - If auth is enabled: `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -H "X-API-Key: <your-secret>" -d '{"prompt":"portrait of a wizard"}'`
+  - If auth is enabled: `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -H "X-API-Key: <your-secret>" -d '{"prompt":"portrait of a wizard"}'`
 
 The generate route creates a text artifact in `outputs/` as placeholder output. This keeps API contracts stable while SDXL runtime is integrated.
 
