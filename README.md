@@ -62,3 +62,12 @@ The API will write a PNG image to `outputs/` when model inference succeeds.
 - Added startup validation for checkpoint configuration when real mode is enabled.
 - Added optional API key protection (`X-API-Key`) for `/v1` endpoints.
 - Improved project portability with repo-relative paths and environment-driven config.
+
+## License
+
+This project is licensed under the Apache License 2.0.
+
+- Full text: `LICENSE`
+- Attribution/notice file: `NOTICE`
+
+Model files and checkpoints are not bundled; users must provide their own and comply with their respective licenses.
