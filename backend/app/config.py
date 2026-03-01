@@ -1,6 +1,10 @@
 from pathlib import Path
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
@@ -9,6 +13,8 @@ class Settings(BaseSettings):
     app_port: int = 8000
 
     output_dir: Path = Path("outputs")
+    checkpoints_dir: Path = Path("models/checkpoints")
+    model_checkpoint: Optional[str] = None
     model_id: str = "stabilityai/stable-diffusion-xl-base-1.0"
     device: str = "auto"
     enable_stub_generator: bool = True
@@ -21,4 +27,12 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def _resolve_from_project_root(path_value: Path) -> Path:
+    return path_value if path_value.is_absolute() else (PROJECT_ROOT / path_value)
+
+
+settings.output_dir = _resolve_from_project_root(settings.output_dir)
+settings.checkpoints_dir = _resolve_from_project_root(settings.checkpoints_dir)
 settings.output_dir.mkdir(parents=True, exist_ok=True)
