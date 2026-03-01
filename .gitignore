@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Environment files
+.env
+
+# Outputs
+outputs/
+
+# Large model artifacts
+models/checkpoints/*.safetensors
+
+# OS/editor
+.DS_Store
+.vscode/
