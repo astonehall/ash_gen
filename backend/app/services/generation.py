@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import time
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from random import randint
@@ -42,15 +43,21 @@ class ImageGenerationService:
         pipeline, torch, torch_device = self._get_or_load_pipeline(checkpoint_path)
 
         generator = torch.Generator(device=torch_device).manual_seed(seed)
-        result = pipeline(
-            prompt=payload.prompt,
-            negative_prompt=payload.negative_prompt,
-            width=payload.width,
-            height=payload.height,
-            num_inference_steps=payload.steps,
-            guidance_scale=payload.guidance_scale,
-            generator=generator,
-        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"`upcast_vae` is deprecated.*",
+                category=FutureWarning,
+            )
+            result = pipeline(
+                prompt=payload.prompt,
+                negative_prompt=payload.negative_prompt,
+                width=payload.width,
+                height=payload.height,
+                num_inference_steps=payload.steps,
+                guidance_scale=payload.guidance_scale,
+                generator=generator,
+            )
 
         target = self.output_dir / f"{image_id}.png"
         result.images[0].save(target)
@@ -118,7 +125,9 @@ class ImageGenerationService:
     def _get_or_load_pipeline(self, checkpoint_path: Path) -> tuple[Any, Any, str]:
         try:
             import torch
-            from diffusers import StableDiffusionXLPipeline
+            from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
+                StableDiffusionXLPipeline,
+            )
         except Exception as exc:  # pragma: no cover - import guard
             raise RuntimeError(
                 "Missing SDXL runtime dependencies. Install with: "
