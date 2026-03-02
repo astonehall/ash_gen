@@ -37,6 +37,7 @@
 - No bloat, packages should make sense and introducing new ones needs a good reason
 - Clean, maintainable code
 - Documentation
+- Easy upgrades and updates are a core requirement; release changes must preserve a simple user update path across supported OSs
 
 ## Important - Development
 

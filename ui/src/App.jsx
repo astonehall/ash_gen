@@ -6,6 +6,7 @@ function App() {
   const [apiBaseUrl, setApiBaseUrl] = useState("http://127.0.0.1:8000");
   const [apiKey, setApiKey] = useState("");
   const [prompt, setPrompt] = useState(defaultPrompt);
+  const [negativePrompt, setNegativePrompt] = useState("");
   const [statusMessage, setStatusMessage] = useState("Ready");
   const [health, setHealth] = useState(null);
   const [modelInfo, setModelInfo] = useState(null);
@@ -55,6 +56,25 @@ function App() {
     }
   };
 
+  const generatedImageUrl = useMemo(() => {
+    const imagePath = generation?.image_path;
+    if (!imagePath) {
+      return null;
+    }
+
+    const imageFileName = imagePath.split("/").pop();
+    if (!imageFileName) {
+      return null;
+    }
+
+    const isImage = /\.(png|jpg|jpeg|webp)$/i.test(imageFileName);
+    if (!isImage) {
+      return null;
+    }
+
+    return `${apiBaseUrl}/outputs/${imageFileName}`;
+  }, [apiBaseUrl, generation]);
+
   const checkHealth = () =>
     withBusy(async () => {
       const data = await callJson("/health", { method: "GET" });
@@ -73,6 +93,7 @@ function App() {
     withBusy(async () => {
       const payload = {
         prompt,
+        negative_prompt: negativePrompt.trim() || null,
         width: 512,
         height: 512,
         steps: 20,
@@ -142,6 +163,15 @@ function App() {
             onChange={(event) => setPrompt(event.target.value)}
           />
         </label>
+        <label>
+          Negative Prompt
+          <textarea
+            rows={3}
+            value={negativePrompt}
+            onChange={(event) => setNegativePrompt(event.target.value)}
+            placeholder="low quality, blurry, bad anatomy"
+          />
+        </label>
         <button disabled={busy || !prompt.trim()} onClick={run(generateImage)}>
           Generate
         </button>
@@ -155,6 +185,19 @@ function App() {
       <section className="card">
         <h2>Response Snapshot</h2>
         <pre>{JSON.stringify({ health, modelInfo, generation }, null, 2)}</pre>
+      </section>
+
+      <section className="card">
+        <h2>Generated Output</h2>
+        {generatedImageUrl ? (
+          <img
+            className="generated-image"
+            src={generatedImageUrl}
+            alt="Generated output"
+          />
+        ) : (
+          <p>No image output yet.</p>
+        )}
       </section>
     </main>
   );

@@ -95,3 +95,10 @@ pre {
   max-height: 280px;
   font-size: 0.8rem;
 }
+
+.generated-image {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+}
