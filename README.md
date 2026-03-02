@@ -2,7 +2,7 @@
 
 SDXL image generation app using Python in the backend and (eventually) a nice simple user interface.
 
-Current version: **0.0.1**
+Current version: **0.0.2**
 
 ## Current Status
 
@@ -66,6 +66,16 @@ Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop
 The UI currently focuses on backend connectivity and generation flow testing.
 
 ## Changelog
+
+### 0.0.2
+
+- Added initial UI testing panel in `ui/` (React + Vite) with Tauri shell scaffold (`src-tauri`).
+- Added backend CORS support for local UI development origins.
+- Added backend static `outputs` mount so generated images can be previewed in the UI.
+- Added negative prompt support and generated image preview in the test UI.
+- Replaced deprecated FastAPI startup event with lifespan handler.
+- Pinned backend and UI dependency versions for reproducible installs.
+- Added explicit project rule that easy user upgrades/updates are a core requirement.
 
 ### 0.0.1
 

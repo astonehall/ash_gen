@@ -11,7 +11,7 @@
 
 ## Phase 2 - Core Product
 
-- [ ] Minimal cross-platform UI shell
+- [x] Minimal cross-platform UI shell
 - [ ] Image gallery and generation history
 - [ ] Authentication and session management
 
