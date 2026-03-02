@@ -52,6 +52,19 @@ To test real image generation with a local checkpoint:
 
 The API will write a PNG image to `outputs/` when model inference succeeds.
 
+## UI (0.0.2-dev)
+
+Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop shell.
+
+1. Install UI dependencies:
+   - `cd ui && npm install`
+2. Run web UI in development mode:
+   - `npm run dev`
+3. Run desktop shell in development mode (requires Rust toolchain):
+   - `npm run tauri:dev`
+
+The UI currently focuses on backend connectivity and generation flow testing.
+
 ## Changelog
 
 ### 0.0.1

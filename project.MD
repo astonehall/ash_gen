@@ -2,6 +2,12 @@
 
 - 0.0.1
 
+## Current UI Track (0.0.2-dev)
+
+- Stack selected: Tauri + React with FastAPI backend sidecar
+- Goal: desktop-first app launch on Linux, Windows, and macOS (no CLI required for end users)
+- Plugin strategy: define extension architecture now, implement plugin runtime in later phase
+
 ## Project Goal - Long Term
 
 - Create python backend that can run SDXL Illustrious models to generate images
@@ -13,9 +19,10 @@
 
 - Set up Python environment and dependencies for SDXL Illustrious model integration
 - Build basic API endpoints for image generation requests
-- Design initial UI mockups for cross-platform compatibility
+- Implement initial desktop UI shell (Tauri + React) with backend connectivity checks
+- Define plugin extension boundaries (manifest + API contracts) without building plugins yet
 - Implement core image generation pipeline with single model support - more are possible in the future
-- Create platform-specific builds for Linux, Windows, and macOS
+- Validate platform-specific desktop builds for Linux first, then Windows and macOS parity
 - Develop user authentication and session management
 - Build image gallery and history features
 
