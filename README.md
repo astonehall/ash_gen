@@ -65,6 +65,30 @@ Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop
 
 The UI currently focuses on backend connectivity and generation flow testing.
 
+## UI Layout Blueprint (Planned)
+
+The desktop UI should follow a clear 4-region layout:
+
+1. **Top bar**
+   - Model status
+   - Active device (CPU/CUDA/MPS)
+   - Settings shortcut
+
+2. **Left panel**
+   - Prompt
+   - Negative prompt
+   - Generation parameters (size, steps, guidance, seed)
+
+3. **Right panel**
+   - Output image preview
+   - Generation metadata (seed, steps, model/checkpoint)
+
+4. **Bottom/side drawer**
+   - History queue
+   - Logs/events/errors
+
+This layout is the baseline UX target for upcoming UI iterations.
+
 ## Changelog
 
 ### 0.0.2
