@@ -8,6 +8,19 @@
 - Goal: desktop-first app launch on Linux, Windows, and macOS (no CLI required for end users)
 - Plugin strategy: define extension architecture now, implement plugin runtime in later phase
 
+## UI/UX Baseline (Locked)
+
+- **Top bar:** model status, device, settings
+- **Left panel:** prompt, negative prompt, generation params
+- **Right panel:** output preview + metadata (seed, steps, model)
+- **Bottom/side drawer:** history queue and logs
+
+Notes:
+
+- Keep first implementation simple and intuitive.
+- Advanced options should use progressive disclosure (hidden by default).
+- Final component/library choices remain pending review.
+
 ## Project Goal - Long Term
 
 - Create python backend that can run SDXL Illustrious models to generate images
