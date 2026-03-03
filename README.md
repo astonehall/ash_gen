@@ -10,7 +10,7 @@ Current version: **0.0.2**
 - Generation endpoint supports both stub mode and real SDXL single-file checkpoints.
 - Startup validation checks model checkpoint configuration when stub mode is disabled.
 
-## Quick Start (Linux Mint 22)
+## Quick Start - (My dev environment Linux Mint 22 )
 
 1. Create and activate a virtual environment:
    - `python3 -m venv .venv`
