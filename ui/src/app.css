@@ -367,6 +367,7 @@ label {
 
 input,
 textarea,
+select,
 .topbar-value {
   width: 100%;
   min-height: 28px;
@@ -377,14 +378,14 @@ textarea,
   color: #dfe6f2;
   font: inherit;
   font-size: 0.82rem;
+}
 
-  .topbar-value {
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
+.topbar-value {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 textarea {
@@ -393,7 +394,8 @@ textarea {
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
   outline: none;
   border-color: #6ea0ff;
 }

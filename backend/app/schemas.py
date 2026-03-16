@@ -1,4 +1,10 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
+
+SamplerName = Literal["euler", "euler_a", "dpmpp_2m"]
+SigmaScheduleName = Literal["normal", "karras"]
 
 
 class GenerateRequest(BaseModel):
@@ -9,6 +15,8 @@ class GenerateRequest(BaseModel):
     steps: int = Field(default=30, ge=1, le=150)
     guidance_scale: float = Field(default=6.5, ge=1.0, le=20.0)
     seed: int | None = Field(default=None, ge=0)
+    sampler: SamplerName = Field(default="euler")
+    sigma_schedule: SigmaScheduleName = Field(default="normal")
 
 
 class GenerateResponse(BaseModel):
@@ -16,6 +24,14 @@ class GenerateResponse(BaseModel):
     image_path: str
     seed: int
     used_stub: bool
+
+
+class GenerationOptionsResponse(BaseModel):
+    samplers: list[SamplerName]
+    sigma_schedules: list[SigmaScheduleName]
+    default_sampler: SamplerName
+    default_sigma_schedule: SigmaScheduleName
+    supported_combinations: dict[SamplerName, list[SigmaScheduleName]]
 
 
 class ModelInfoResponse(BaseModel):

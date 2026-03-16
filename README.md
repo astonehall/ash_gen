@@ -33,6 +33,9 @@ Current version: **0.0.2**
 - Model info:
   - `curl http://127.0.0.1:8000/v1/model/info`
   - If auth is enabled: `curl -H "X-API-Key: <your-secret>" http://127.0.0.1:8000/v1/model/info`
+- Generation options:
+  - `curl http://127.0.0.1:8000/v1/generate/options`
+  - If auth is enabled: `curl -H "X-API-Key: <your-secret>" http://127.0.0.1:8000/v1/generate/options`
 - Generate output:
   - `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -d '{"prompt":"portrait of a wizard"}'`
   - If auth is enabled: `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -H "X-API-Key: <your-secret>" -d '{"prompt":"portrait of a wizard"}'`
@@ -74,6 +77,7 @@ Current desktop shell includes:
 - Central preview area for selected output
 - Compact gallery of finished generations
 - Bottom-docked positive and negative prompt fields
+- Initial sampler and scheduler dropdowns for generation testing
 
 ## Current UI Layout
 
@@ -136,6 +140,8 @@ Framer Motion is intentionally deferred until the core UX is stable, and direct 
 - Added collapsible and resizable left/right sidebars.
 - Added central preview/gallery workspace with selectable image preview.
 - Added bottom prompt dock for positive and negative prompts.
+- Added initial sampler and scheduler dropdown support for generation testing.
+- Added backend generation options endpoint so sampler/scheduler choices can be sourced by the UI.
 - Replaced deprecated FastAPI startup event with lifespan handler.
 - Pinned backend and UI dependency versions for reproducible installs.
 - Added explicit project rule that easy user upgrades/updates are a core requirement.
