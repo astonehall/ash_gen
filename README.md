@@ -2,7 +2,7 @@
 
 SDXL image generation app with a FastAPI backend and a desktop-first UI shell built with React, Vite, and Tauri.
 
-Current version: **0.0.2**
+Current version: **0.0.3**
 
 ## Current Status
 
@@ -57,7 +57,7 @@ To test real image generation with a local checkpoint:
 
 The API will write a PNG image to `outputs/` when model inference succeeds.
 
-## UI (0.0.2-dev)
+## UI (0.0.3-dev)
 
 Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop shell.
 
@@ -128,6 +128,13 @@ Framer Motion is intentionally deferred until the core UX is stable, and direct 
 - Current planning direction is to keep clear extension boundaries now and implement backend-first extension points before any frontend plugin runtime.
 
 ## Changelog
+
+### 0.0.3
+
+- Added sampler and sigma-schedule request fields to generation requests.
+- Added initial backend sampler/scheduler mapping for generation testing.
+- Added `/v1/generate/options` so the UI can source supported combinations from the backend.
+- Updated the desktop UI to load sampler/scheduler options from the API instead of hardcoding them.
 
 ### 0.0.2
 
