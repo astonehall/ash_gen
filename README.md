@@ -1,16 +1,18 @@
 # AshGen
 
-SDXL image generation app using Python in the backend and (eventually) a nice simple user interface.
+SDXL image generation app with a FastAPI backend and a desktop-first UI shell built with React, Vite, and Tauri.
 
 Current version: **0.0.2**
 
 ## Current Status
 
-- Backend API scaffold is ready with FastAPI.
-- Generation endpoint supports both stub mode and real SDXL single-file checkpoints.
-- Startup validation checks model checkpoint configuration when stub mode is disabled.
+- FastAPI backend is running with health, generation, and model info routes.
+- Generation supports both stub mode and real SDXL single-file checkpoints.
+- Startup validation checks checkpoint configuration when stub mode is disabled.
+- Local browser UI can connect to the backend, preview generated files, and browse a compact gallery.
+- Current frontend is a full-screen desktop-style shell with a compact top settings bar, collapsible/resizable sidebars, central preview/gallery workspace, and bottom prompt dock.
 
-## Quick Start (Linux Mint 22)
+## Quick Start - (My dev environment Linux Mint 22 )
 
 1. Create and activate a virtual environment:
    - `python3 -m venv .venv`
@@ -31,11 +33,11 @@ Current version: **0.0.2**
 - Model info:
   - `curl http://127.0.0.1:8000/v1/model/info`
   - If auth is enabled: `curl -H "X-API-Key: <your-secret>" http://127.0.0.1:8000/v1/model/info`
-- Generate stub output:
+- Generate output:
   - `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -d '{"prompt":"portrait of a wizard"}'`
   - If auth is enabled: `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -H "X-API-Key: <your-secret>" -d '{"prompt":"portrait of a wizard"}'`
 
-The generate route creates a text artifact in `outputs/` as placeholder output. This keeps API contracts stable while SDXL runtime is integrated.
+When stub mode is enabled, the generate route writes a placeholder text artifact to `outputs/`. When real checkpoint inference is enabled, it writes a PNG image to `outputs/`.
 
 ## Test Local Checkpoint
 
@@ -65,38 +67,75 @@ Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop
 
 The UI currently focuses on backend connectivity and generation flow testing.
 
-## UI Layout Blueprint (Planned)
+Current desktop shell includes:
 
-The desktop UI should follow a clear 4-region layout:
+- Scrollable top settings/status bar
+- Collapsible and resizable left and right side panels
+- Central preview area for selected output
+- Compact gallery of finished generations
+- Bottom-docked positive and negative prompt fields
+
+## Current UI Layout
+
+The current desktop UI follows a compact full-screen layout:
 
 1. **Top bar**
-   - Model status
-   - Active device (CPU/CUDA/MPS)
-   - Settings shortcut
+   - Backend connection
+   - API key input
+   - Status and model readout
+   - Scrollable compact settings tiles
 
-2. **Left panel**
-   - Prompt
-   - Negative prompt
-   - Generation parameters (size, steps, guidance, seed)
+2. **Left sidebar**
+   - Main generation controls
+   - Canvas and sampling parameters
+   - Generate action
+   - Collapsible and resizable
 
-3. **Right panel**
-   - Output image preview
-   - Generation metadata (seed, steps, model/checkpoint)
+3. **Main workspace**
+   - Preview area for selected output
+   - Gallery of completed generations
+   - Positive and negative prompt dock fixed to the bottom
 
-4. **Bottom/side drawer**
-   - History queue
-   - Logs/events/errors
+4. **Right sidebar**
+   - Reserved space for future advanced tools/options
+   - Temporary session/debug information
+   - Collapsible and resizable
 
-This layout is the baseline UX target for upcoming UI iterations.
+History and detailed metadata are intentionally de-emphasized for now while the main generation workspace is being established.
+
+## Frontend Stack
+
+The current frontend stack is:
+
+- Tauri for the desktop shell
+- React for the UI layer
+- Tailwind CSS + shadcn/ui for styling and components
+- TanStack Query for backend/API state
+- React Hook Form + Zod for forms and validation
+- Lucide React for icons
+
+Framer Motion is intentionally deferred until the core UX is stable, and direct Radix UI usage should only be added when needed beyond shadcn/ui.
+
+## Saved Workspaces and Extensions (Planned)
+
+- Saved local workspaces/configuration are planned as a first-class feature.
+- The preferred persistence approach is versioned local JSON stored in the app data directory.
+- Future plugin/extension support is also planned, but plugin runtime is not implemented yet.
+- Current planning direction is to keep clear extension boundaries now and implement backend-first extension points before any frontend plugin runtime.
 
 ## Changelog
 
 ### 0.0.2
 
-- Added initial UI testing panel in `ui/` (React + Vite) with Tauri shell scaffold (`src-tauri`).
+- Added initial UI in `ui/` (React + Vite) with Tauri shell scaffold (`src-tauri`).
 - Added backend CORS support for local UI development origins.
 - Added backend static `outputs` mount so generated images can be previewed in the UI.
-- Added negative prompt support and generated image preview in the test UI.
+- Added negative prompt support and generated image preview in the UI.
+- Reworked the frontend into a desktop-style full-screen shell.
+- Added compact top settings/status bar with horizontal scrolling.
+- Added collapsible and resizable left/right sidebars.
+- Added central preview/gallery workspace with selectable image preview.
+- Added bottom prompt dock for positive and negative prompts.
 - Replaced deprecated FastAPI startup event with lifespan handler.
 - Pinned backend and UI dependency versions for reproducible installs.
 - Added explicit project rule that easy user upgrades/updates are a core requirement.

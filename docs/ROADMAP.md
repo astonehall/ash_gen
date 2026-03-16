@@ -12,7 +12,10 @@
 ## Phase 2 - Core Product
 
 - [x] Minimal cross-platform UI shell
-- [ ] Image gallery and generation history
+- [x] Desktop-style full-screen workspace shell
+- [x] Collapsible/resizable sidebars and prompt dock
+- [ ] Expand finished image gallery workflow
+- [ ] Saved workspace/configuration state
 - [ ] Authentication and session management
 
 ## Phase 3 - Advanced Controls
