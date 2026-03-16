@@ -89,6 +89,26 @@ The desktop UI should follow a clear 4-region layout:
 
 This layout is the baseline UX target for upcoming UI iterations.
 
+## Frontend Stack (Planned)
+
+The planned production UI stack is:
+
+- Tauri for the desktop shell
+- React for the UI layer
+- Tailwind CSS + shadcn/ui for styling and components
+- TanStack Query for backend/API state
+- React Hook Form + Zod for forms and validation
+- Lucide React for icons
+
+Framer Motion is intentionally deferred until the core UX is stable, and direct Radix UI usage should only be added when needed beyond shadcn/ui.
+
+## Saved Workspaces and Extensions (Planned)
+
+- Saved local workspaces/configuration are planned as a first-class feature.
+- The preferred persistence approach is versioned local JSON stored in the app data directory.
+- Future plugin/extension support is also planned, but plugin runtime is not implemented yet.
+- Current planning direction is to keep clear extension boundaries now and implement backend-first extension points before any frontend plugin runtime.
+
 ## Changelog
 
 ### 0.0.2

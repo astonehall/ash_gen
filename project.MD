@@ -8,6 +8,38 @@
 - Goal: desktop-first app launch on Linux, Windows, and macOS (no CLI required for end users)
 - Plugin strategy: define extension architecture now, implement plugin runtime in later phase
 
+## Frontend Stack (Locked)
+
+- Desktop shell: Tauri
+- UI framework: React
+- Styling/component approach: Tailwind CSS + shadcn/ui
+- Server/API state: TanStack Query
+- Forms and validation: React Hook Form + Zod
+- Icons: Lucide React
+- Motion: Framer Motion later only, once the core UX is stable
+- Direct Radix usage: optional only when needed beyond shadcn/ui
+
+## Workspace Persistence (Planned)
+
+- Saved workspaces/configuration are a first-class feature
+- Default persistence approach: versioned local JSON stored in the app data directory
+- Initial saved data should include:
+  - prompt
+  - negative prompt
+  - generation parameters
+  - selected model/checkpoint
+  - UI layout state
+  - recent history metadata
+- Persistence should be designed to support future upgrades and migrations cleanly
+
+## Plugin / Extension Direction (Planned)
+
+- Future user-created extensions are a required capability
+- Architecture should keep clear extension boundaries now, even before plugin runtime exists
+- Backend-first extension points are preferred initially
+- Frontend plugin runtime is deferred until the core UI stabilizes
+- No arbitrary plugin execution should be implied or enabled yet
+
 ## UI/UX Baseline (Locked)
 
 - **Top bar:** model status, device, settings
