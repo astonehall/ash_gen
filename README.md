@@ -2,7 +2,7 @@
 
 SDXL image generation app with a FastAPI backend and a desktop-first UI shell built with React, Vite, and Tauri.
 
-Current version: **0.0.2**
+Current version: **0.0.3**
 
 ## Current Status
 
@@ -33,6 +33,9 @@ Current version: **0.0.2**
 - Model info:
   - `curl http://127.0.0.1:8000/v1/model/info`
   - If auth is enabled: `curl -H "X-API-Key: <your-secret>" http://127.0.0.1:8000/v1/model/info`
+- Generation options:
+  - `curl http://127.0.0.1:8000/v1/generate/options`
+  - If auth is enabled: `curl -H "X-API-Key: <your-secret>" http://127.0.0.1:8000/v1/generate/options`
 - Generate output:
   - `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -d '{"prompt":"portrait of a wizard"}'`
   - If auth is enabled: `curl -X POST http://127.0.0.1:8000/v1/generate -H "Content-Type: application/json" -H "X-API-Key: <your-secret>" -d '{"prompt":"portrait of a wizard"}'`
@@ -54,7 +57,7 @@ To test real image generation with a local checkpoint:
 
 The API will write a PNG image to `outputs/` when model inference succeeds.
 
-## UI (0.0.2-dev)
+## UI (0.0.3-dev)
 
 Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop shell.
 
@@ -74,6 +77,7 @@ Current desktop shell includes:
 - Central preview area for selected output
 - Compact gallery of finished generations
 - Bottom-docked positive and negative prompt fields
+- Initial sampler and scheduler dropdowns for generation testing
 
 ## Current UI Layout
 
@@ -125,6 +129,13 @@ Framer Motion is intentionally deferred until the core UX is stable, and direct 
 
 ## Changelog
 
+### 0.0.3
+
+- Added sampler and sigma-schedule request fields to generation requests.
+- Added initial backend sampler/scheduler mapping for generation testing.
+- Added `/v1/generate/options` so the UI can source supported combinations from the backend.
+- Updated the desktop UI to load sampler/scheduler options from the API instead of hardcoding them.
+
 ### 0.0.2
 
 - Added initial UI in `ui/` (React + Vite) with Tauri shell scaffold (`src-tauri`).
@@ -136,6 +147,8 @@ Framer Motion is intentionally deferred until the core UX is stable, and direct 
 - Added collapsible and resizable left/right sidebars.
 - Added central preview/gallery workspace with selectable image preview.
 - Added bottom prompt dock for positive and negative prompts.
+- Added initial sampler and scheduler dropdown support for generation testing.
+- Added backend generation options endpoint so sampler/scheduler choices can be sourced by the UI.
 - Replaced deprecated FastAPI startup event with lifespan handler.
 - Pinned backend and UI dependency versions for reproducible installs.
 - Added explicit project rule that easy user upgrades/updates are a core requirement.

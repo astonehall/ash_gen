@@ -9,7 +9,7 @@ from random import randint
 from typing import Any
 
 from ..config import settings
-from ..schemas import GenerateRequest, ModelInfoResponse
+from ..schemas import GenerateRequest, GenerationOptionsResponse, ModelInfoResponse
 
 
 @dataclass
@@ -21,6 +21,9 @@ class GenerationResult:
 
 
 class ImageGenerationService:
+    SAMPLERS = ["euler", "euler_a", "dpmpp_2m"]
+    SIGMA_SCHEDULES = ["normal", "karras"]
+
     def __init__(self, output_dir: Path) -> None:
         self.output_dir = output_dir
         self._pipeline: Any | None = None
@@ -41,6 +44,7 @@ class ImageGenerationService:
 
         checkpoint_path = self._resolve_checkpoint_path()
         pipeline, torch, torch_device = self._get_or_load_pipeline(checkpoint_path)
+        self._apply_sampler_scheduler(pipeline, payload)
 
         generator = torch.Generator(device=torch_device).manual_seed(seed)
         with warnings.catch_warnings():
@@ -102,6 +106,19 @@ class ImageGenerationService:
             pipeline_loaded=self._pipeline is not None,
         )
 
+    def get_generation_options(self) -> GenerationOptionsResponse:
+        supported_combinations = {
+            sampler: list(self.SIGMA_SCHEDULES) for sampler in self.SAMPLERS
+        }
+
+        return GenerationOptionsResponse(
+            samplers=list(self.SAMPLERS),
+            sigma_schedules=list(self.SIGMA_SCHEDULES),
+            default_sampler="euler",
+            default_sigma_schedule="normal",
+            supported_combinations=supported_combinations,
+        )
+
     @staticmethod
     def _resolve_checkpoint_path() -> Path:
         if not settings.model_checkpoint:
@@ -150,6 +167,47 @@ class ImageGenerationService:
             self._pipeline_checkpoint = checkpoint_path
 
         return self._pipeline, torch, torch_device
+
+    @staticmethod
+    def _apply_sampler_scheduler(pipeline: Any, payload: GenerateRequest) -> None:
+        try:
+            from diffusers import (
+                DPMSolverMultistepScheduler,
+                EulerAncestralDiscreteScheduler,
+                EulerDiscreteScheduler,
+            )
+        except Exception as exc:  # pragma: no cover - import guard
+            raise RuntimeError(
+                "Missing scheduler runtime dependencies. Install with: "
+                "pip install diffusers"
+            ) from exc
+
+        base_config = dict(pipeline.scheduler.config)
+        use_karras = payload.sigma_schedule == "karras"
+
+        if payload.sampler == "euler":
+            pipeline.scheduler = EulerDiscreteScheduler.from_config(
+                base_config,
+                use_karras_sigmas=use_karras,
+            )
+            return
+
+        if payload.sampler == "euler_a":
+            pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(
+                base_config,
+                use_karras_sigmas=use_karras,
+            )
+            return
+
+        if payload.sampler == "dpmpp_2m":
+            pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
+                base_config,
+                algorithm_type="dpmsolver++",
+                use_karras_sigmas=use_karras,
+            )
+            return
+
+        raise ValueError(f"Unsupported sampler: {payload.sampler}")
 
     @staticmethod
     def _resolve_torch_device(torch: Any) -> str:

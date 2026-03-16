@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..schemas import GenerateRequest, GenerateResponse, ModelInfoResponse
+from ..schemas import (
+    GenerateRequest,
+    GenerateResponse,
+    GenerationOptionsResponse,
+    ModelInfoResponse,
+)
 from ..security import require_api_key
 from ..services.generation import generation_service
 
@@ -22,6 +27,11 @@ def generate(payload: GenerateRequest) -> GenerateResponse:
         seed=result.seed,
         used_stub=result.used_stub,
     )
+
+
+@router.get("/generate/options", response_model=GenerationOptionsResponse)
+def generation_options() -> GenerationOptionsResponse:
+    return generation_service.get_generation_options()
 
 
 @router.get("/model/info", response_model=ModelInfoResponse)

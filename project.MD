@@ -1,8 +1,8 @@
 ## Current Version
 
-- 0.0.2
+- 0.0.3
 
-## Current UI Track (0.0.2)
+## Current UI Track (0.0.3)
 
 - Stack selected: Tauri + React with FastAPI backend sidecar
 - Goal: desktop-first app launch on Linux, Windows, and macOS (no CLI required for end users)

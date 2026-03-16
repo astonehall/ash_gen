@@ -1,6 +1,32 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const defaultPrompt = "portrait photo, soft lighting";
+const fallbackGenerationOptions = {
+  samplers: ["euler", "euler_a", "dpmpp_2m"],
+  sigma_schedules: ["normal", "karras"],
+  default_sampler: "euler",
+  default_sigma_schedule: "normal",
+  supported_combinations: {
+    euler: ["normal", "karras"],
+    euler_a: ["normal", "karras"],
+    dpmpp_2m: ["normal", "karras"],
+  },
+};
+
+const formatOptionLabel = (value) => {
+  if (value === "euler_a") {
+    return "Euler A";
+  }
+
+  if (value === "dpmpp_2m") {
+    return "DPM++ 2M";
+  }
+
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+};
 
 function App() {
   const minSidebarWidth = 220;
@@ -15,6 +41,11 @@ function App() {
   const [steps, setSteps] = useState(20);
   const [guidanceScale, setGuidanceScale] = useState(6.0);
   const [seed, setSeed] = useState("");
+  const [sampler, setSampler] = useState("euler");
+  const [sigmaSchedule, setSigmaSchedule] = useState("normal");
+  const [generationOptions, setGenerationOptions] = useState(
+    fallbackGenerationOptions,
+  );
   const [statusMessage, setStatusMessage] = useState("Ready");
   const [health, setHealth] = useState(null);
   const [modelInfo, setModelInfo] = useState(null);
@@ -89,6 +120,14 @@ function App() {
     return `${apiBaseUrl}/outputs/${imageFileName}`;
   }, [apiBaseUrl, generation]);
 
+  const availableSchedules = useMemo(() => {
+    return (
+      generationOptions.supported_combinations?.[sampler] ||
+      generationOptions.sigma_schedules ||
+      fallbackGenerationOptions.sigma_schedules
+    );
+  }, [generationOptions, sampler]);
+
   const checkHealth = () =>
     withBusy(async () => {
       const data = await callJson("/health", { method: "GET" });
@@ -103,6 +142,17 @@ function App() {
       setStatusMessage("Model info loaded");
     });
 
+  const fetchGenerationOptions = async () => {
+    try {
+      const data = await callJson("/v1/generate/options", { method: "GET" });
+      setGenerationOptions(data);
+      setSampler(data.default_sampler);
+      setSigmaSchedule(data.default_sigma_schedule);
+    } catch {
+      setGenerationOptions(fallbackGenerationOptions);
+    }
+  };
+
   const generateImage = () =>
     withBusy(async () => {
       const payload = {
@@ -113,6 +163,8 @@ function App() {
         steps,
         guidance_scale: guidanceScale,
         seed: seed.trim() ? Number(seed) : null,
+        sampler,
+        sigma_schedule: sigmaSchedule,
       };
 
       const data = await callJson("/v1/generate", {
@@ -144,6 +196,22 @@ function App() {
       );
     }
   };
+
+  useEffect(() => {
+    void fetchGenerationOptions();
+  }, []);
+
+  useEffect(() => {
+    if (!availableSchedules.includes(sigmaSchedule)) {
+      setSigmaSchedule(
+        availableSchedules[0] || generationOptions.default_sigma_schedule,
+      );
+    }
+  }, [
+    availableSchedules,
+    generationOptions.default_sigma_schedule,
+    sigmaSchedule,
+  ]);
 
   const selectedGalleryItem = useMemo(() => {
     if (!gallery.length) {
@@ -327,6 +395,32 @@ function App() {
               <div className="control-group">
                 <h3>Sampling</h3>
                 <div className="compact-grid">
+                  <label>
+                    Sampler
+                    <select
+                      value={sampler}
+                      onChange={(event) => setSampler(event.target.value)}
+                    >
+                      {generationOptions.samplers.map((option) => (
+                        <option key={option} value={option}>
+                          {formatOptionLabel(option)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Scheduler
+                    <select
+                      value={sigmaSchedule}
+                      onChange={(event) => setSigmaSchedule(event.target.value)}
+                    >
+                      {availableSchedules.map((option) => (
+                        <option key={option} value={option}>
+                          {formatOptionLabel(option)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                   <label>
                     Steps
                     <input
