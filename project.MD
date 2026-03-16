@@ -7,6 +7,7 @@
 - Stack selected: Tauri + React with FastAPI backend sidecar
 - Goal: desktop-first app launch on Linux, Windows, and macOS (no CLI required for end users)
 - Plugin strategy: define extension architecture now, implement plugin runtime in later phase
+- Current UI direction: traditional desktop application layout
 
 ## Frontend Stack (Locked)
 
@@ -29,7 +30,7 @@
   - generation parameters
   - selected model/checkpoint
   - UI layout state
-  - recent history metadata
+  - sidebar widths and collapsed/open state
 - Persistence should be designed to support future upgrades and migrations cleanly
 
 ## Plugin / Extension Direction (Planned)
@@ -42,16 +43,17 @@
 
 ## UI/UX Baseline (Locked)
 
-- **Top bar:** model status, device, settings
-- **Left panel:** prompt, negative prompt, generation params
-- **Right panel:** output preview + metadata (seed, steps, model)
-- **Bottom/side drawer:** history queue and logs
+- **Top bar:** compact scrollable settings/status strip
+- **Left sidebar:** main generation controls, collapsible and resizable
+- **Main workspace:** preview area + finished generation gallery
+- **Bottom dock:** fixed positive and negative prompt fields
+- **Right sidebar:** reserved advanced options area, collapsible and resizable
 
 Notes:
 
-- Keep first implementation simple and intuitive.
-- Advanced options should use progressive disclosure (hidden by default).
-- Final component/library choices remain pending review.
+- Keep the interface compact and desktop-like.
+- Avoid large rounded mobile-style controls and wasted space.
+- Advanced options should use progressive disclosure and live in the right sidebar over time.
 
 ## Project Goal - Long Term
 
@@ -64,12 +66,12 @@ Notes:
 
 - Set up Python environment and dependencies for SDXL Illustrious model integration
 - Build basic API endpoints for image generation requests
-- Implement initial desktop UI shell (Tauri + React) with backend connectivity checks
+- Refine the desktop UI shell (Tauri + React) now that the first full-screen layout exists
 - Define plugin extension boundaries (manifest + API contracts) without building plugins yet
 - Implement core image generation pipeline with single model support - more are possible in the future
 - Validate platform-specific desktop builds for Linux first, then Windows and macOS parity
-- Develop user authentication and session management
-- Build image gallery and history features
+- Add saved local workspace/configuration state
+- Expand the image gallery workflow and image selection behavior
 
 ## Project Philosophy
 
