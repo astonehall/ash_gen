@@ -9,7 +9,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 class Settings(BaseSettings):
     app_name: str = "AshGen API"
-    app_version: str = "0.0.3"
+    app_version: str = "0.0.4"
     app_host: str = "127.0.0.1"
     app_port: int = 8000
 

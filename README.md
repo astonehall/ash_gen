@@ -2,7 +2,7 @@
 
 SDXL image generation app with a FastAPI backend and a desktop-first UI shell built with React, Vite, and Tauri.
 
-Current version: **0.0.3**
+Current version: **0.0.4**
 
 ## Current Status
 
@@ -57,7 +57,15 @@ To test real image generation with a local checkpoint:
 
 The API will write a PNG image to `outputs/` when model inference succeeds.
 
-## UI (0.0.3-dev)
+## One-Command Dev Startup
+
+From the project root on Linux:
+
+- `./dev.sh`
+
+This starts the FastAPI backend, starts the Vite frontend, opens `http://127.0.0.1:5173` in your browser, and stops both processes when you exit the script.
+
+## UI (0.0.4-dev)
 
 Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop shell.
 
@@ -128,6 +136,11 @@ Framer Motion is intentionally deferred until the core UX is stable, and direct 
 - Current planning direction is to keep clear extension boundaries now and implement backend-first extension points before any frontend plugin runtime.
 
 ## Changelog
+
+### 0.0.4
+
+- Bumped backend, UI, and desktop app version metadata to 0.0.4.
+- Added a root `dev.sh` launcher to start backend and frontend together and auto-open the browser on Linux.
 
 ### 0.0.3
 

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")" && trap 'kill 0' EXIT && source .venv/bin/activate && uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000 & (cd ui && npm run dev -- --host 127.0.0.1) & until (echo > /dev/tcp/127.0.0.1/5173) >/dev/null 2>&1; do sleep 1; done && xdg-open http://127.0.0.1:5173 >/dev/null 2>&1 && wait
