@@ -80,15 +80,12 @@ class ImageGenerationService:
         self._resolve_checkpoint_path()
 
     def get_model_info(self) -> ModelInfoResponse:
-        resolved_checkpoint_path: Path | None = None
-        checkpoint_exists = False
-
-        if settings.model_checkpoint:
-            candidate = Path(settings.model_checkpoint)
-            if not candidate.is_absolute():
-                candidate = settings.checkpoints_dir / candidate
-            resolved_checkpoint_path = candidate
-            checkpoint_exists = candidate.exists() and candidate.is_file()
+        resolved_checkpoint_path = self._get_configured_checkpoint_path()
+        checkpoint_exists = bool(
+            resolved_checkpoint_path
+            and resolved_checkpoint_path.exists()
+            and resolved_checkpoint_path.is_file()
+        )
 
         resolved_device = settings.device.lower().strip()
         if resolved_device == "auto":
@@ -120,16 +117,25 @@ class ImageGenerationService:
         )
 
     @staticmethod
-    def _resolve_checkpoint_path() -> Path:
+    def _get_configured_checkpoint_path() -> Path | None:
         if not settings.model_checkpoint:
-            raise ValueError(
-                "MODEL_CHECKPOINT is required when ENABLE_STUB_GENERATOR=false. "
-                "Set it in backend/.env (for example: MODEL_CHECKPOINT=my_model.safetensors)."
-            )
+            return None
 
         checkpoint_path = Path(settings.model_checkpoint)
         if not checkpoint_path.is_absolute():
             checkpoint_path = settings.checkpoints_dir / checkpoint_path
+
+        return checkpoint_path
+
+    @staticmethod
+    def _resolve_checkpoint_path() -> Path:
+        checkpoint_path = ImageGenerationService._get_configured_checkpoint_path()
+
+        if checkpoint_path is None:
+            raise ValueError(
+                "MODEL_CHECKPOINT is required when ENABLE_STUB_GENERATOR=false. "
+                "Set it in backend/.env (for example: MODEL_CHECKPOINT=my_model.safetensors)."
+            )
 
         if not checkpoint_path.exists() or not checkpoint_path.is_file():
             raise FileNotFoundError(
