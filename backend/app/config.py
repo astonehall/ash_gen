@@ -12,6 +12,13 @@ class Settings(BaseSettings):
     app_version: str = "0.0.4"
     app_host: str = "127.0.0.1"
     app_port: int = 8000
+    cors_origins: list[str] = [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+    ]
 
     output_dir: Path = Path("outputs")
     checkpoints_dir: Path = Path("models/checkpoints")

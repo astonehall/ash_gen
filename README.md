@@ -59,11 +59,24 @@ The API will write a PNG image to `outputs/` when model inference succeeds.
 
 ## One-Command Dev Startup
 
-From the project root on Linux:
+After activating your project virtual environment, run from the project root:
 
-- `./dev.sh`
+- Cross-platform: `python dev.py`
+- Linux convenience wrapper: `./dev.sh`
+- Windows convenience wrapper: `dev.bat`
 
-This starts the FastAPI backend, starts the Vite frontend, opens `http://127.0.0.1:5173` in your browser, and stops both processes when you exit the script.
+This starts the FastAPI backend, starts the Vite frontend, opens `http://127.0.0.1:5173` in your browser, and stops both processes when you exit the launcher.
+
+For frontend-to-backend routing in web mode, you can override the default API target with `VITE_API_BASE_URL` before starting Vite.
+If port `8000` is already in use, set `ASHGEN_BACKEND_PORT` before running `python dev.py`.
+
+## Smoke Tests
+
+Run a lightweight full-project smoke pass from the repo root:
+
+- `python smoke_test.py`
+
+This runs backend route smoke tests and then a frontend production build.
 
 ## UI (0.0.4-dev)
 

@@ -1,38 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-
-const defaultPrompt = "portrait photo, soft lighting";
-const fallbackGenerationOptions = {
-  samplers: ["euler", "euler_a", "dpmpp_2m"],
-  sigma_schedules: ["normal", "karras"],
-  default_sampler: "euler",
-  default_sigma_schedule: "normal",
-  supported_combinations: {
-    euler: ["normal", "karras"],
-    euler_a: ["normal", "karras"],
-    dpmpp_2m: ["normal", "karras"],
-  },
-};
-
-const formatOptionLabel = (value) => {
-  if (value === "euler_a") {
-    return "Euler A";
-  }
-
-  if (value === "dpmpp_2m") {
-    return "DPM++ 2M";
-  }
-
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-};
+import { ControlSidebar } from "./components/ControlSidebar";
+import { OptionsSidebar } from "./components/OptionsSidebar";
+import { TopSettingsBar } from "./components/TopSettingsBar";
+import { WorkspaceView } from "./components/WorkspaceView";
+import { useApiClient } from "./hooks/useApiClient";
+import { useBusyAction } from "./hooks/useBusyAction";
+import { usePanelResize } from "./hooks/usePanelResize";
+import {
+  buildOutputAssetUrl,
+  defaultApiBaseUrl,
+  defaultPrompt,
+  fallbackGenerationOptions,
+  getOutputFileName,
+} from "./lib/appConfig";
 
 function App() {
-  const minSidebarWidth = 220;
-  const maxSidebarWidth = 520;
   const collapsedRailWidth = 52;
-  const [apiBaseUrl, setApiBaseUrl] = useState("http://127.0.0.1:8000");
+  const [apiBaseUrl, setApiBaseUrl] = useState(defaultApiBaseUrl);
   const [apiKey, setApiKey] = useState("");
   const [prompt, setPrompt] = useState(defaultPrompt);
   const [negativePrompt, setNegativePrompt] = useState("");
@@ -56,69 +40,20 @@ function App() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(280);
   const [rightSidebarWidth, setRightSidebarWidth] = useState(280);
-  const [busy, setBusy] = useState(false);
 
-  const headers = useMemo(() => {
-    const output = { "Content-Type": "application/json" };
-    if (apiKey.trim()) {
-      output["X-API-Key"] = apiKey.trim();
-    }
-    return output;
-  }, [apiKey]);
+  const { busy, withBusy } = useBusyAction();
+  const { callJson, normalizedApiBaseUrl } = useApiClient(apiBaseUrl, apiKey);
+  const { startResize } = usePanelResize({
+    leftSidebarWidth,
+    rightSidebarWidth,
+    setLeftSidebarWidth,
+    setRightSidebarWidth,
+  });
 
-  const callJson = async (path, options = {}) => {
-    const response = await fetch(`${apiBaseUrl}${path}`, {
-      ...options,
-      headers: {
-        ...headers,
-        ...(options.headers || {}),
-      },
-    });
-
-    const body = await response.text();
-    let parsed;
-
-    try {
-      parsed = body ? JSON.parse(body) : null;
-    } catch {
-      parsed = body;
-    }
-
-    if (!response.ok) {
-      const detail = parsed?.detail || parsed || `HTTP ${response.status}`;
-      throw new Error(String(detail));
-    }
-
-    return parsed;
-  };
-
-  const withBusy = async (action) => {
-    setBusy(true);
-    try {
-      await action();
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const generatedImageUrl = useMemo(() => {
-    const imagePath = generation?.image_path;
-    if (!imagePath) {
-      return null;
-    }
-
-    const imageFileName = imagePath.split("/").pop();
-    if (!imageFileName) {
-      return null;
-    }
-
-    const isImage = /\.(png|jpg|jpeg|webp)$/i.test(imageFileName);
-    if (!isImage) {
-      return null;
-    }
-
-    return `${apiBaseUrl}/outputs/${imageFileName}`;
-  }, [apiBaseUrl, generation]);
+  const generatedImageUrl = useMemo(
+    () => buildOutputAssetUrl(normalizedApiBaseUrl, generation?.image_path),
+    [generation, normalizedApiBaseUrl],
+  );
 
   const availableSchedules = useMemo(() => {
     return (
@@ -150,6 +85,7 @@ function App() {
       setSigmaSchedule(data.default_sigma_schedule);
     } catch {
       setGenerationOptions(fallbackGenerationOptions);
+      setStatusMessage("Using fallback generation options");
     }
   };
 
@@ -174,9 +110,16 @@ function App() {
 
       setGeneration(data);
       setGallery((current) => {
+        const previewUrl = buildOutputAssetUrl(
+          normalizedApiBaseUrl,
+          data.image_path,
+        );
+
         const nextItem = {
           id: data.image_id,
-          imageUrl: `${apiBaseUrl}/outputs/${data.image_path.split("/").pop()}`,
+          imageUrl: previewUrl,
+          isPreviewable: Boolean(previewUrl),
+          fileName: getOutputFileName(data.image_path),
           prompt,
           createdAt: new Date().toLocaleTimeString(),
         };
@@ -222,432 +165,76 @@ function App() {
   }, [gallery, selectedImageId]);
 
   const mainPreviewUrl = selectedGalleryItem?.imageUrl || generatedImageUrl;
-
-  const clampSidebarWidth = (value) =>
-    Math.min(maxSidebarWidth, Math.max(minSidebarWidth, value));
-
-  const startResize = (side) => (event) => {
-    event.preventDefault();
-
-    const startX = event.clientX;
-    const initialWidth = side === "left" ? leftSidebarWidth : rightSidebarWidth;
-
-    const onMouseMove = (moveEvent) => {
-      const delta = moveEvent.clientX - startX;
-
-      if (side === "left") {
-        setLeftSidebarWidth(clampSidebarWidth(initialWidth + delta));
-        return;
-      }
-
-      setRightSidebarWidth(clampSidebarWidth(initialWidth - delta));
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  };
-
-  const leftRailItems = [
-    { id: "controls", label: "CTL", title: "Open controls" },
-    { id: "sampling", label: "SMP", title: "Open sampling controls" },
-    { id: "run", label: "RUN", title: "Open run controls" },
-  ];
-
-  const rightRailItems = [
-    { id: "options", label: "OPT", title: "Open options" },
-    { id: "session", label: "SES", title: "Open session panel" },
-    { id: "debug", label: "DBG", title: "Open debug panel" },
-  ];
-
-  const topSettings = [
-    {
-      id: "backend-url",
-      label: "Backend",
-      control: (
-        <input
-          value={apiBaseUrl}
-          onChange={(event) => setApiBaseUrl(event.target.value)}
-        />
-      ),
-    },
-    {
-      id: "api-key",
-      label: "API Key",
-      control: (
-        <input
-          value={apiKey}
-          onChange={(event) => setApiKey(event.target.value)}
-          placeholder="Optional"
-        />
-      ),
-    },
-    {
-      id: "status-message",
-      label: "Status",
-      control: <div className="topbar-value">{statusMessage}</div>,
-    },
-    {
-      id: "backend-health",
-      label: "Backend State",
-      control: (
-        <div className="topbar-value">
-          {health?.status === "ok" ? "Online" : "Offline"}
-        </div>
-      ),
-    },
-    {
-      id: "model-info",
-      label: "Model",
-      control: (
-        <div className="topbar-value">
-          {modelInfo?.model_checkpoint || modelInfo?.model_id || "Not loaded"}
-        </div>
-      ),
-    },
-  ];
+  const previewMessage =
+    selectedGalleryItem && !selectedGalleryItem.isPreviewable
+      ? `Selected result is not previewable in the image pane: ${selectedGalleryItem.fileName}`
+      : "Live generation previews can slot in here later.";
 
   return (
     <main className="desktop-shell">
-      <header className="top-settings-bar">
-        <div className="top-settings-track">
-          <div className="app-title-block">
-            <strong>AshGen</strong>
-            <span>Local generation workspace</span>
-          </div>
-          {topSettings.map((item) => (
-            <label className="top-setting" key={item.id}>
-              <span>{item.label}</span>
-              {item.control}
-            </label>
-          ))}
-        </div>
-        <div className="top-settings-actions">
-          <button disabled={busy} onClick={run(checkHealth)} type="button">
-            Health
-          </button>
-          <button disabled={busy} onClick={run(fetchModelInfo)} type="button">
-            Model
-          </button>
-        </div>
-      </header>
+      <TopSettingsBar
+        apiBaseUrl={apiBaseUrl}
+        apiKey={apiKey}
+        busy={busy}
+        health={health}
+        modelInfo={modelInfo}
+        onApiBaseUrlChange={setApiBaseUrl}
+        onApiKeyChange={setApiKey}
+        onHealthCheck={run(checkHealth)}
+        onModelInfo={run(fetchModelInfo)}
+        statusMessage={statusMessage}
+      />
 
       <section className="workspace-shell">
-        <aside
-          className={`side-panel left-panel ${leftSidebarOpen ? "" : "is-collapsed"}`}
-          style={{
-            width: leftSidebarOpen
-              ? `${leftSidebarWidth}px`
-              : `${collapsedRailWidth}px`,
-          }}
-        >
-          <div className="panel-header-row">
-            <h2>{leftSidebarOpen ? "Controls" : "Ctl"}</h2>
-            <button
-              className="panel-toggle"
-              onClick={() => setLeftSidebarOpen((current) => !current)}
-              type="button"
-            >
-              {leftSidebarOpen ? "Hide" : "Show"}
-            </button>
-          </div>
-
-          {leftSidebarOpen ? (
-            <div className="panel-scroll">
-              <div className="control-group">
-                <h3>Canvas</h3>
-                <div className="compact-grid">
-                  <label>
-                    Width
-                    <input
-                      type="number"
-                      min="256"
-                      max="2048"
-                      step="64"
-                      value={width}
-                      onChange={(event) => setWidth(Number(event.target.value))}
-                    />
-                  </label>
-                  <label>
-                    Height
-                    <input
-                      type="number"
-                      min="256"
-                      max="2048"
-                      step="64"
-                      value={height}
-                      onChange={(event) =>
-                        setHeight(Number(event.target.value))
-                      }
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div className="control-group">
-                <h3>Sampling</h3>
-                <div className="compact-grid">
-                  <label>
-                    Sampler
-                    <select
-                      value={sampler}
-                      onChange={(event) => setSampler(event.target.value)}
-                    >
-                      {generationOptions.samplers.map((option) => (
-                        <option key={option} value={option}>
-                          {formatOptionLabel(option)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Scheduler
-                    <select
-                      value={sigmaSchedule}
-                      onChange={(event) => setSigmaSchedule(event.target.value)}
-                    >
-                      {availableSchedules.map((option) => (
-                        <option key={option} value={option}>
-                          {formatOptionLabel(option)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Steps
-                    <input
-                      type="number"
-                      min="1"
-                      max="150"
-                      value={steps}
-                      onChange={(event) => setSteps(Number(event.target.value))}
-                    />
-                  </label>
-                  <label>
-                    Guidance
-                    <input
-                      type="number"
-                      min="1"
-                      max="20"
-                      step="0.1"
-                      value={guidanceScale}
-                      onChange={(event) =>
-                        setGuidanceScale(Number(event.target.value))
-                      }
-                    />
-                  </label>
-                </div>
-                <label>
-                  Seed
-                  <input
-                    value={seed}
-                    onChange={(event) => setSeed(event.target.value)}
-                    placeholder="Random if blank"
-                  />
-                </label>
-              </div>
-
-              <div className="control-group">
-                <h3>Run</h3>
-                <button
-                  className="primary-button"
-                  disabled={busy || !prompt.trim()}
-                  onClick={run(generateImage)}
-                  type="button"
-                >
-                  {busy ? "Generating" : "Generate"}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="panel-rail">
-              {leftRailItems.map((item) => (
-                <button
-                  className="rail-button"
-                  key={item.id}
-                  onClick={() => setLeftSidebarOpen(true)}
-                  title={item.title}
-                  type="button"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </aside>
-
-        <div
-          aria-hidden="true"
-          className={`panel-resizer left-resizer ${leftSidebarOpen ? "" : "is-disabled"}`}
-          onMouseDown={leftSidebarOpen ? startResize("left") : undefined}
+        <ControlSidebar
+          availableSchedules={availableSchedules}
+          busy={busy}
+          collapsedRailWidth={collapsedRailWidth}
+          generationOptions={generationOptions}
+          guidanceScale={guidanceScale}
+          height={height}
+          isOpen={leftSidebarOpen}
+          onGenerate={run(generateImage)}
+          onGuidanceScaleChange={setGuidanceScale}
+          onHeightChange={setHeight}
+          onResizeStart={startResize("left")}
+          onSamplerChange={setSampler}
+          onSeedChange={setSeed}
+          onSigmaScheduleChange={setSigmaSchedule}
+          onStepsChange={setSteps}
+          onToggle={() => setLeftSidebarOpen((current) => !current)}
+          onWidthChange={setWidth}
+          prompt={prompt}
+          sampler={sampler}
+          seed={seed}
+          sigmaSchedule={sigmaSchedule}
+          steps={steps}
+          width={leftSidebarWidth}
+          widthValue={width}
         />
 
-        <section className="main-workspace">
-          <div className="main-content-scroll">
-            <section className="workspace-section preview-section">
-              <div className="section-heading-row">
-                <h2>Preview</h2>
-                <span>
-                  {mainPreviewUrl ? "Selected image" : "No preview available"}
-                </span>
-              </div>
-              <div className="preview-surface">
-                {mainPreviewUrl ? (
-                  <img
-                    className="main-preview-image"
-                    src={mainPreviewUrl}
-                    alt="Selected generation"
-                  />
-                ) : (
-                  <div className="preview-empty-state">
-                    <strong>Preview area</strong>
-                    <span>
-                      Live generation previews can slot in here later.
-                    </span>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <section className="workspace-section gallery-section">
-              <div className="section-heading-row">
-                <h2>Gallery</h2>
-                <span>{gallery.length} items</span>
-              </div>
-              {gallery.length ? (
-                <div className="gallery-grid">
-                  {gallery.map((item) => (
-                    <button
-                      className={`gallery-tile ${item.id === selectedGalleryItem?.id ? "is-selected" : ""}`}
-                      key={item.id}
-                      onClick={() => setSelectedImageId(item.id)}
-                      type="button"
-                    >
-                      <img src={item.imageUrl} alt={item.prompt} />
-                      <span>{item.createdAt}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="gallery-empty-state">
-                  <strong>No finished generations yet</strong>
-                  <span>
-                    Completed images will appear here as a compact gallery.
-                  </span>
-                </div>
-              )}
-            </section>
-          </div>
-
-          <footer className="prompt-dock">
-            <div className="prompt-grid">
-              <label>
-                Positive Prompt
-                <textarea
-                  rows={2}
-                  value={prompt}
-                  onChange={(event) => setPrompt(event.target.value)}
-                />
-              </label>
-              <label>
-                Negative Prompt
-                <textarea
-                  rows={2}
-                  value={negativePrompt}
-                  onChange={(event) => setNegativePrompt(event.target.value)}
-                  placeholder="low quality, blurry, bad anatomy"
-                />
-              </label>
-            </div>
-          </footer>
-        </section>
-
-        <div
-          aria-hidden="true"
-          className={`panel-resizer right-resizer ${rightSidebarOpen ? "" : "is-disabled"}`}
-          onMouseDown={rightSidebarOpen ? startResize("right") : undefined}
+        <WorkspaceView
+          gallery={gallery}
+          mainPreviewUrl={mainPreviewUrl}
+          negativePrompt={negativePrompt}
+          onNegativePromptChange={setNegativePrompt}
+          onPromptChange={setPrompt}
+          onSelectImage={setSelectedImageId}
+          previewMessage={previewMessage}
+          prompt={prompt}
+          selectedGalleryItem={selectedGalleryItem}
         />
 
-        <aside
-          className={`side-panel right-panel ${rightSidebarOpen ? "" : "is-collapsed"}`}
-          style={{
-            width: rightSidebarOpen
-              ? `${rightSidebarWidth}px`
-              : `${collapsedRailWidth}px`,
-          }}
-        >
-          <div className="panel-header-row">
-            <h2>{rightSidebarOpen ? "Options" : "Opt"}</h2>
-            <button
-              className="panel-toggle"
-              onClick={() => setRightSidebarOpen((current) => !current)}
-              type="button"
-            >
-              {rightSidebarOpen ? "Hide" : "Show"}
-            </button>
-          </div>
-
-          {rightSidebarOpen ? (
-            <div className="panel-scroll">
-              <div className="control-group">
-                <h3>Reserved Space</h3>
-                <p>
-                  Use this panel later for batch tools, upscaling, masking,
-                  presets, or export actions.
-                </p>
-              </div>
-
-              <div className="control-group">
-                <h3>Current Session</h3>
-                <div className="info-list">
-                  <div>
-                    <span>Backend</span>
-                    <strong>
-                      {health?.status === "ok" ? "Online" : "Offline"}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>Device</span>
-                    <strong>{modelInfo?.resolved_device || "Unknown"}</strong>
-                  </div>
-                  <div>
-                    <span>Last Result</span>
-                    <strong>{generation?.image_id || "None"}</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="control-group">
-                <h3>Debug Snapshot</h3>
-                <pre>
-                  {JSON.stringify({ health, modelInfo, generation }, null, 2)}
-                </pre>
-              </div>
-            </div>
-          ) : (
-            <div className="panel-rail">
-              {rightRailItems.map((item) => (
-                <button
-                  className="rail-button"
-                  key={item.id}
-                  onClick={() => setRightSidebarOpen(true)}
-                  title={item.title}
-                  type="button"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </aside>
+        <OptionsSidebar
+          collapsedRailWidth={collapsedRailWidth}
+          generation={generation}
+          health={health}
+          isOpen={rightSidebarOpen}
+          modelInfo={modelInfo}
+          onResizeStart={startResize("right")}
+          onToggle={() => setRightSidebarOpen((current) => !current)}
+          width={rightSidebarWidth}
+        />
       </section>
     </main>
   );

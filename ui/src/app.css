@@ -341,6 +341,18 @@ button:disabled {
   background: #0f1318;
 }
 
+.gallery-artifact-placeholder {
+  aspect-ratio: 1 / 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px;
+  border: 1px dashed #455164;
+  background: #10141a;
+  text-align: center;
+}
+
 .gallery-tile span {
   color: #a3afc0;
   font-size: 0.74rem;

@@ -89,3 +89,6 @@ Notes:
 ## Important - Development
 
 Is being done on a Linux Mint 22 machine and needs to run in a virtual env. This is the primary testing and development machine so it has to work here above all else. It needs to be compatible with other os's so keep this in mind
+
+- Preferred cross-platform dev launcher: `python dev.py`
+- Lightweight smoke pass: `python smoke_test.py`
