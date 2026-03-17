@@ -22,3 +22,8 @@ models/checkpoints/*
 # OS/editor
 .DS_Store
 .vscode/
+
+# Personal Copilot workspace customizations
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
