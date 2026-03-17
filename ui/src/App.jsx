@@ -171,7 +171,7 @@ function App() {
       : "Live generation previews can slot in here later.";
 
   return (
-    <main className="desktop-shell">
+    <main className="grid h-screen grid-rows-[auto_minmax(0,1fr)] bg-[#171b21]">
       <TopSettingsBar
         apiBaseUrl={apiBaseUrl}
         apiKey={apiKey}
@@ -185,7 +185,7 @@ function App() {
         statusMessage={statusMessage}
       />
 
-      <section className="workspace-shell">
+      <section className="grid min-h-0 grid-cols-[auto_6px_minmax(0,1fr)_6px_auto] max-[900px]:grid-cols-1 max-[900px]:grid-rows-[auto_minmax(0,1fr)_auto]">
         <ControlSidebar
           availableSchedules={availableSchedules}
           busy={busy}
