@@ -10,7 +10,7 @@ Current version: **0.0.4**
 - Generation supports both stub mode and real SDXL single-file checkpoints.
 - Startup validation checks checkpoint configuration when stub mode is disabled.
 - Local browser UI can connect to the backend, preview generated files, and browse a compact gallery.
-- Current frontend is a full-screen desktop-style shell with a compact top settings bar, collapsible/resizable sidebars, central preview/gallery workspace, and bottom prompt dock.
+- Current frontend is a full-screen desktop-style shell with a compact top settings bar, collapsible/resizable sidebars, and a central workspace made of draggable preview, gallery, and prompt panels.
 
 ## Quick Start - (My dev environment Linux Mint 22 )
 
@@ -98,8 +98,8 @@ Current desktop shell includes:
 - Draggable grouped sidebar cards for reordering control sections
 - Persisted sidebar card order and open/closed state between sessions
 - Central preview area for selected output
-- Compact gallery of finished generations
-- Bottom-docked positive and negative prompt fields
+- Compact gallery of finished generations with adjustable height and internal scrolling
+- Draggable prompt panel with adjustable height and primary generate action
 - Initial sampler and scheduler dropdowns for generation testing
 
 ## Current UI Layout
@@ -118,8 +118,8 @@ The current desktop UI follows a compact full-screen layout:
 
 3. **Main workspace**
    - Preview area for selected output
-   - Gallery of completed generations
-   - Bottom prompt dock with primary generate action
+   - Gallery of completed generations with adjustable height and internal scrolling
+   - Prompt panel with primary generate action, draggable and resizable inside the workspace
 
 4. **Right sidebar**
    - Future advanced tools/options grouped into draggable cards

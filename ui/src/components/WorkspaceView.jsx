@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -31,9 +32,95 @@ import { cn } from "../lib/utils";
 
 const GALLERY_MIN_HEIGHT = 176;
 const GALLERY_MAX_HEIGHT = 440;
+const PROMPT_MIN_HEIGHT = 188;
+const PROMPT_MAX_HEIGHT = 420;
+const PREVIEW_MIN_HEIGHT = 220;
+const STACK_GAP = 12;
+const RESIZE_CHROME_HEIGHT = 12;
+
+function clampHeight(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
 
 function clampGalleryHeight(value) {
-  return Math.min(GALLERY_MAX_HEIGHT, Math.max(GALLERY_MIN_HEIGHT, value));
+  return clampHeight(value, GALLERY_MIN_HEIGHT, GALLERY_MAX_HEIGHT);
+}
+
+function clampPromptHeight(value) {
+  return clampHeight(value, PROMPT_MIN_HEIGHT, PROMPT_MAX_HEIGHT);
+}
+
+function ResizeHandle({ onMouseDown, title }) {
+  return (
+    <button
+      type="button"
+      aria-label={title}
+      className="h-2 w-full shrink-0 cursor-row-resize rounded-sm bg-surface-2/70 transition-colors hover:bg-violet-500/30"
+      onMouseDown={onMouseDown}
+      title={title}
+    />
+  );
+}
+
+function resolveDockHeights(containerHeight, sectionOrder, storedHeights) {
+  const fixedIds = sectionOrder.filter((id) => id !== "preview");
+
+  if (!containerHeight || !fixedIds.length) {
+    return storedHeights;
+  }
+
+  const minimumHeights = {
+    gallery: GALLERY_MIN_HEIGHT,
+    prompt: PROMPT_MIN_HEIGHT,
+  };
+  const availableCardHeight =
+    containerHeight -
+    STACK_GAP * Math.max(sectionOrder.length - 1, 0) -
+    RESIZE_CHROME_HEIGHT * fixedIds.length -
+    PREVIEW_MIN_HEIGHT;
+
+  const desiredTotal = fixedIds.reduce((sum, id) => sum + storedHeights[id], 0);
+
+  if (availableCardHeight >= desiredTotal) {
+    return storedHeights;
+  }
+
+  const reducedHeights = { ...storedHeights };
+  const totalSlack = fixedIds.reduce(
+    (sum, id) => sum + Math.max(0, storedHeights[id] - minimumHeights[id]),
+    0,
+  );
+  const shortage = desiredTotal - Math.max(availableCardHeight, 0);
+
+  if (totalSlack <= 0 || shortage >= totalSlack) {
+    fixedIds.forEach((id) => {
+      reducedHeights[id] = minimumHeights[id];
+    });
+    return reducedHeights;
+  }
+
+  fixedIds.forEach((id, index) => {
+    const slack = Math.max(0, storedHeights[id] - minimumHeights[id]);
+    const proportionalReduction = (shortage * slack) / totalSlack;
+    const roundedReduction =
+      index === fixedIds.length - 1
+        ? shortage -
+          fixedIds.slice(0, -1).reduce((sum, currentId) => {
+            const currentSlack = Math.max(
+              0,
+              storedHeights[currentId] - minimumHeights[currentId],
+            );
+            return sum + Math.round((shortage * currentSlack) / totalSlack);
+          }, 0)
+        : Math.round(proportionalReduction);
+
+    reducedHeights[id] = Math.max(
+      minimumHeights[id],
+      storedHeights[id] - roundedReduction,
+    );
+  });
+
+  return reducedHeights;
 }
 
 function WorkspaceSection({
@@ -43,8 +130,11 @@ function WorkspaceSection({
   icon: Icon,
   badgeTone,
   badgeLabel,
+  wrapperClassName,
   className,
   contentClassName,
+  wrapperStyle,
+  cardStyle,
   children,
 }) {
   const {
@@ -63,10 +153,15 @@ function WorkspaceSection({
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      style={{ ...style, ...wrapperStyle }}
+      className={cn("w-full self-stretch", wrapperClassName)}
+    >
       <Card
+        style={cardStyle}
         className={cn(
-          "overflow-hidden border-border-strong bg-surface-1/90 transition-opacity",
+          "h-full w-full overflow-hidden border-border-strong bg-surface-1/90 transition-opacity",
           isDragging && "opacity-40 shadow-[0_14px_32px_rgba(0,0,0,0.35)]",
           className,
         )}
@@ -95,7 +190,7 @@ function WorkspaceSection({
           </div>
           <Badge tone={badgeTone}>{badgeLabel}</Badge>
         </CardHeader>
-        <CardContent className={cn("p-3", contentClassName)}>
+        <CardContent className={cn("w-full p-3", contentClassName)}>
           {children}
         </CardContent>
       </Card>
@@ -118,17 +213,24 @@ export function WorkspaceView({
 }) {
   const [sectionOrder, setSectionOrder] = useLocalStorageState(
     "ashgen:workspace:section-order",
-    ["preview", "gallery"],
+    ["preview", "gallery", "prompt"],
     (value) =>
       Array.isArray(value) &&
-      value.length === 2 &&
-      value.every((item) => ["preview", "gallery"].includes(item)),
+      value.length === 3 &&
+      value.every((item) => ["preview", "gallery", "prompt"].includes(item)),
   );
   const [galleryHeight, setGalleryHeight] = useLocalStorageState(
     "ashgen:workspace:gallery-height",
     208,
     (value) => typeof value === "number" && Number.isFinite(value),
   );
+  const [promptHeight, setPromptHeight] = useLocalStorageState(
+    "ashgen:workspace:prompt-height",
+    220,
+    (value) => typeof value === "number" && Number.isFinite(value),
+  );
+  const stackRef = useRef(null);
+  const [stackHeight, setStackHeight] = useState(0);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -157,15 +259,14 @@ export function WorkspaceView({
     });
   };
 
-  const startGalleryResize = (event) => {
+  const startPanelResize = (event, startHeight, setHeight, clamp) => {
     event.preventDefault();
 
     const startY = event.clientY;
-    const startHeight = galleryHeight;
 
     const onMouseMove = (moveEvent) => {
       const delta = startY - moveEvent.clientY;
-      setGalleryHeight(clampGalleryHeight(startHeight + delta));
+      setHeight(clamp(startHeight + delta));
     };
 
     const onMouseUp = () => {
@@ -182,6 +283,52 @@ export function WorkspaceView({
   };
 
   const galleryPanelHeight = clampGalleryHeight(galleryHeight);
+  const promptPanelHeight = clampPromptHeight(promptHeight);
+  const resolvedHeights = resolveDockHeights(stackHeight, sectionOrder, {
+    gallery: galleryPanelHeight,
+    prompt: promptPanelHeight,
+  });
+
+  useEffect(() => {
+    if (!stackRef.current) {
+      return undefined;
+    }
+
+    const element = stackRef.current;
+    const updateHeight = () => {
+      const computedStyle = window.getComputedStyle(element);
+      const verticalPadding =
+        Number.parseFloat(computedStyle.paddingTop || "0") +
+        Number.parseFloat(computedStyle.paddingBottom || "0");
+
+      setStackHeight(Math.max(0, element.clientHeight - verticalPadding));
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const startGalleryResize = (event) =>
+    startPanelResize(
+      event,
+      galleryPanelHeight,
+      setGalleryHeight,
+      clampGalleryHeight,
+    );
+
+  const startPromptResize = (event) =>
+    startPanelResize(
+      event,
+      promptPanelHeight,
+      setPromptHeight,
+      clampPromptHeight,
+    );
 
   const sections = {
     preview: (
@@ -194,13 +341,14 @@ export function WorkspaceView({
         }
         badgeTone={mainPreviewUrl ? "accent" : "neutral"}
         badgeLabel={mainPreviewUrl ? "Active" : "Empty"}
-        className="min-h-[320px] flex-1"
-        contentClassName="h-full p-3"
+        wrapperClassName="min-h-0 flex-1 w-full"
+        className="flex min-h-[220px] flex-col"
+        contentClassName="flex min-h-0 flex-1 p-3"
       >
-        <div className="grid h-full min-h-[300px] place-items-center rounded-sm border border-border-strong bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.12),transparent_32%),linear-gradient(180deg,rgba(23,23,36,0.96),rgba(9,9,15,0.96))]">
+        <div className="flex h-full min-h-0 w-full items-center justify-center rounded-sm border border-border-strong bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.12),transparent_32%),linear-gradient(180deg,rgba(23,23,36,0.96),rgba(9,9,15,0.96))]">
           {mainPreviewUrl ? (
             <img
-              className="h-full max-h-[58vh] w-full rounded-sm object-contain"
+              className="max-h-full max-w-full rounded-sm object-contain"
               src={mainPreviewUrl}
               alt="Selected generation"
             />
@@ -223,25 +371,28 @@ export function WorkspaceView({
       </WorkspaceSection>
     ),
     gallery: (
-      <div className="shrink-0" style={{ height: `${galleryPanelHeight}px` }}>
-        <div
-          aria-hidden="true"
-          className="mb-2 h-2 cursor-row-resize rounded-sm bg-surface-2/70 transition-colors hover:bg-violet-500/30"
-          onMouseDown={startGalleryResize}
-          title="Resize gallery"
-        />
-        <WorkspaceSection
-          id="gallery"
-          icon={Layers}
-          title="Gallery"
-          subtitle="Recent generation history"
-          badgeTone="accent"
-          badgeLabel={`${gallery.length} items`}
-          className="h-[calc(100%-0.5rem)]"
-          contentClassName="grid h-[calc(100%-3.25rem)] p-3"
-        >
+      <WorkspaceSection
+        id="gallery"
+        icon={Layers}
+        title="Gallery"
+        subtitle="Recent generation history"
+        badgeTone="accent"
+        badgeLabel={`${gallery.length} items`}
+        wrapperClassName="w-full shrink-0"
+        wrapperStyle={{
+          height: `${resolvedHeights.gallery + RESIZE_CHROME_HEIGHT}px`,
+        }}
+        className="flex min-h-0 flex-col"
+        contentClassName="flex min-h-0 flex-1 p-3"
+        cardStyle={{ height: `${resolvedHeights.gallery}px` }}
+      >
+        <div className="flex h-full min-h-0 w-full flex-col gap-1">
+          <ResizeHandle
+            onMouseDown={startGalleryResize}
+            title="Resize gallery"
+          />
           {gallery.length ? (
-            <div className="grid h-full min-h-0 grid-cols-[repeat(auto-fill,minmax(136px,1fr))] content-start gap-2 overflow-y-auto pr-1">
+            <div className="grid min-h-0 flex-1 w-full grid-cols-[repeat(auto-fit,minmax(136px,136px))] justify-center gap-2 overflow-y-auto pr-1">
               {gallery.map((item) => (
                 <button
                   className={cn(
@@ -280,7 +431,7 @@ export function WorkspaceView({
               ))}
             </div>
           ) : (
-            <div className="grid h-full min-h-[88px] place-items-center gap-2 rounded-sm border border-dashed border-violet-500/20 bg-violet-500/5 text-center">
+            <div className="grid min-h-[88px] flex-1 place-items-center gap-2 rounded-sm border border-dashed border-violet-500/20 bg-violet-500/5 text-center">
               <span className="text-xs font-medium text-txt-2">
                 No finished generations yet
               </span>
@@ -289,13 +440,85 @@ export function WorkspaceView({
               </span>
             </div>
           )}
-        </WorkspaceSection>
-      </div>
+        </div>
+      </WorkspaceSection>
+    ),
+    prompt: (
+      <WorkspaceSection
+        id="prompt"
+        icon={Play}
+        title="Prompt"
+        subtitle="Compose prompts and launch generation"
+        badgeTone={busy ? "accent" : "neutral"}
+        badgeLabel={busy ? "Running" : "Ready"}
+        wrapperClassName="w-full shrink-0"
+        wrapperStyle={{
+          height: `${resolvedHeights.prompt + RESIZE_CHROME_HEIGHT}px`,
+        }}
+        className="flex min-h-0 flex-col"
+        contentClassName="flex min-h-0 flex-1 p-3"
+        cardStyle={{ height: `${resolvedHeights.prompt}px` }}
+      >
+        <div className="flex h-full min-h-0 w-full flex-col gap-1">
+          <ResizeHandle
+            onMouseDown={startPromptResize}
+            title="Resize prompt panel"
+          />
+          <div className="grid min-h-0 w-full flex-1 gap-3 min-[981px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_220px]">
+            <label className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-1.5">
+              <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-txt-3">
+                Positive Prompt
+              </span>
+              <Textarea
+                className="h-full min-h-[112px] resize-none overflow-y-auto"
+                value={prompt}
+                onChange={(event) => onPromptChange(event.target.value)}
+              />
+            </label>
+            <label className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-1.5">
+              <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-txt-3">
+                Negative Prompt
+              </span>
+              <Textarea
+                className="h-full min-h-[112px] resize-none overflow-y-auto"
+                value={negativePrompt}
+                onChange={(event) => onNegativePromptChange(event.target.value)}
+                placeholder="low quality, blurry, bad anatomy"
+              />
+            </label>
+            <div className="grid min-h-0 content-end gap-2 max-[980px]:min-w-0">
+              <Badge tone="accent">Primary action</Badge>
+              <span className="text-xs text-txt-3">
+                Drag this panel anywhere in the workspace and resize it when you
+                need more writing room.
+              </span>
+              <Button
+                className="h-11 w-full shadow-[0_0_28px_rgba(139,92,246,0.2)]"
+                disabled={busy || !prompt.trim()}
+                onClick={onGenerate}
+                type="button"
+              >
+                {busy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4" />
+                    Generate
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </WorkspaceSection>
     ),
   };
 
   return (
-    <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] bg-surface-0/70">
+    <section className="h-full min-h-0 overflow-hidden bg-surface-0/70">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -305,64 +528,14 @@ export function WorkspaceView({
           items={sectionOrder}
           strategy={verticalListSortingStrategy}
         >
-          <div className="flex min-h-0 flex-col gap-3 overflow-hidden p-3">
+          <div
+            ref={stackRef}
+            className="flex h-full min-h-0 flex-col gap-3 overflow-hidden p-3"
+          >
             {sectionOrder.map((sectionId) => sections[sectionId])}
           </div>
         </SortableContext>
       </DndContext>
-
-      <footer className="border-t border-border bg-surface-1/95 p-3 backdrop-blur-sm">
-        <Card className="border-violet-500/20 bg-gradient-to-b from-surface-1 to-surface-2">
-          <CardContent className="grid gap-3 p-3">
-            <div className="grid grid-cols-[1fr_1fr_auto] gap-3 max-[980px]:grid-cols-1">
-              <label className="grid gap-1.5">
-                <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-txt-3">
-                  Positive Prompt
-                </span>
-                <Textarea
-                  rows={3}
-                  value={prompt}
-                  onChange={(event) => onPromptChange(event.target.value)}
-                />
-              </label>
-              <label className="grid gap-1.5">
-                <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-txt-3">
-                  Negative Prompt
-                </span>
-                <Textarea
-                  rows={3}
-                  value={negativePrompt}
-                  onChange={(event) =>
-                    onNegativePromptChange(event.target.value)
-                  }
-                  placeholder="low quality, blurry, bad anatomy"
-                />
-              </label>
-              <div className="grid min-w-[180px] content-end gap-2 max-[980px]:min-w-0">
-                <Badge tone="accent">Primary action</Badge>
-                <Button
-                  className="h-11 w-full shadow-[0_0_28px_rgba(139,92,246,0.2)]"
-                  disabled={busy || !prompt.trim()}
-                  onClick={onGenerate}
-                  type="button"
-                >
-                  {busy ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-4 w-4" />
-                      Generate
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </footer>
     </section>
   );
 }
