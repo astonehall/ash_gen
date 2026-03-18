@@ -1,20 +1,11 @@
-const sectionClassName =
-  "grid content-start gap-1.5 border border-[#2b3340] bg-[#1b2028] p-[7px]";
-
-const headingClassName =
-  "m-0 text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-[#98a5b7]";
-
-const subtextClassName = "text-[0.8rem] text-[#d7dde7]";
-
-const labelClassName = "grid gap-[3px] text-[0.74rem] text-[#b2bdcc]";
-
-const textareaClassName =
-  "min-h-[56px] w-full resize-y border border-[#364151] bg-[#12171d] px-1.5 py-1 text-[0.82rem] text-[#dfe6f2] outline-none placeholder:text-[#6f7c90] focus:border-[#6ea0ff]";
+import { ImageIcon, Layers, Loader2, Play, Sparkles } from "lucide-react";
 
 export function WorkspaceView({
+  busy,
   gallery,
   mainPreviewUrl,
   negativePrompt,
+  onGenerate,
   onNegativePromptChange,
   onPromptChange,
   onSelectImage,
@@ -23,110 +14,146 @@ export function WorkspaceView({
   selectedGalleryItem,
 }) {
   return (
-    <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] bg-[#15191f]">
-      <div className="grid min-h-0 content-start gap-1.5 overflow-auto p-1.5 [scrollbar-color:#353e4d_transparent] [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:bg-[#353e4d]">
-        <section className={`${sectionClassName} min-h-[260px]`}>
-          <div className="flex items-center justify-between gap-1.5">
-            <h2 className={headingClassName}>Preview</h2>
-            <span className={subtextClassName}>
+    <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] bg-surface-0">
+      {/* Main content area */}
+      <div className="grid min-h-0 content-start gap-2 overflow-auto p-2">
+        {/* Preview */}
+        <div className="grid min-h-[280px] gap-1">
+          <div className="flex items-center justify-between px-0.5">
+            <div className="flex items-center gap-1.5">
+              <ImageIcon className="h-3 w-3 text-txt-3" />
+              <h2 className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
+                Preview
+              </h2>
+            </div>
+            <span className="text-2xs text-txt-3">
               {mainPreviewUrl ? "Selected image" : "No preview available"}
             </span>
           </div>
 
-          <div className="grid min-h-[320px] place-items-center border border-[#313948] bg-[#11151b]">
+          <div className="grid min-h-[300px] place-items-center rounded-sm border border-border bg-surface-1">
             {mainPreviewUrl ? (
               <img
-                className="h-full max-h-[58vh] w-full object-contain bg-[#0f1318]"
+                className="h-full max-h-[60vh] w-full rounded-sm object-contain"
                 src={mainPreviewUrl}
                 alt="Selected generation"
               />
             ) : (
-              <div className="grid min-h-[110px] place-items-center gap-1 text-center text-[#9ca8b8]">
-                <strong className="text-[0.92rem] font-semibold text-[#dfe6f2]">
-                  Preview area
-                </strong>
-                <span className="text-[0.8rem] text-[#d7dde7]">
-                  {previewMessage}
-                </span>
+              <div className="grid place-items-center gap-2 p-8 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-surface-2">
+                  <Sparkles className="h-5 w-5 text-txt-3" />
+                </div>
+                <div className="grid gap-0.5">
+                  <span className="text-sm font-medium text-txt-1">
+                    Preview area
+                  </span>
+                  <span className="text-xs text-txt-3">{previewMessage}</span>
+                </div>
               </div>
             )}
           </div>
-        </section>
+        </div>
 
-        <section className={sectionClassName}>
-          <div className="flex items-center justify-between gap-1.5">
-            <h2 className={headingClassName}>Gallery</h2>
-            <span className={subtextClassName}>{gallery.length} items</span>
+        {/* Gallery */}
+        <div className="grid gap-1">
+          <div className="flex items-center justify-between px-0.5">
+            <div className="flex items-center gap-1.5">
+              <Layers className="h-3 w-3 text-txt-3" />
+              <h2 className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
+                Gallery
+              </h2>
+            </div>
+            <span className="text-2xs text-txt-3">{gallery.length} items</span>
           </div>
 
           {gallery.length ? (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-1.5">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-1.5">
               {gallery.map((item) => (
                 <button
-                  className={`grid gap-[3px] border p-[3px] text-left transition-colors ${item.id === selectedGalleryItem?.id ? "border-[#6ea0ff] bg-[#1a2230]" : "border-[#303847] bg-[#151a21] hover:bg-[#1b212a]"}`}
+                  className={`group grid gap-1 rounded-sm border p-1 text-left transition-colors ${
+                    item.id === selectedGalleryItem?.id
+                      ? "border-accent bg-accent-muted"
+                      : "border-border bg-surface-1 hover:border-border-strong hover:bg-surface-2"
+                  }`}
                   key={item.id}
                   onClick={() => onSelectImage(item.id)}
                   type="button"
                 >
                   {item.imageUrl ? (
                     <img
-                      className="aspect-square w-full object-cover bg-[#0f1318]"
+                      className="aspect-square w-full rounded-sm object-cover"
                       src={item.imageUrl}
                       alt={item.prompt}
                     />
                   ) : (
-                    <div className="grid aspect-square content-center justify-items-center gap-1 border border-dashed border-[#455164] bg-[#10141a] p-2.5 text-center">
-                      <strong className="text-[0.92rem] font-semibold text-[#dfe6f2]">
-                        Artifact
-                      </strong>
-                      <span className="text-[0.74rem] text-[#a3afc0]">
-                        {item.fileName || "Non-image output"}
+                    <div className="grid aspect-square content-center justify-items-center gap-1 rounded-sm border border-dashed border-border-strong bg-surface-0 p-2 text-center">
+                      <Layers className="h-4 w-4 text-txt-3" />
+                      <span className="text-2xs text-txt-3">
+                        {item.fileName || "Artifact"}
                       </span>
                     </div>
                   )}
-
-                  <span className="text-[0.74rem] text-[#a3afc0]">
+                  <span className="truncate text-2xs text-txt-3 group-hover:text-txt-2">
                     {item.createdAt}
                   </span>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="grid min-h-[110px] place-items-center gap-1 text-center text-[#9ca8b8]">
-              <strong className="text-[0.92rem] font-semibold text-[#dfe6f2]">
-                No finished generations yet
-              </strong>
-              <span className="text-[0.8rem] text-[#d7dde7]">
-                Completed images will appear here as a compact gallery.
+            <div className="grid min-h-[80px] place-items-center gap-1 rounded-sm border border-dashed border-border bg-surface-1 text-center">
+              <span className="text-xs text-txt-3">
+                Completed generations will appear here
               </span>
             </div>
           )}
-        </section>
+        </div>
       </div>
 
-      <footer className="border-t border-[#2a313c] bg-[#1b2028] p-1.5">
-        <div className="grid grid-cols-2 gap-1.5 max-[900px]:grid-cols-1">
-          <label className={labelClassName}>
-            Positive Prompt
+      {/* Prompt dock */}
+      <footer className="grid gap-2 border-t border-border bg-surface-1 p-2">
+        <div className="grid grid-cols-2 gap-2 max-[900px]:grid-cols-1">
+          <div className="grid gap-1">
+            <label className="text-2xs font-medium text-txt-3">
+              Positive Prompt
+            </label>
             <textarea
-              className={textareaClassName}
+              className="min-h-[48px] w-full resize-y rounded-sm border border-border bg-surface-0 px-2 py-1.5 text-xs text-txt-1 outline-none transition-colors placeholder:text-txt-3 focus:border-border-focus"
               rows={2}
               value={prompt}
-              onChange={(event) => onPromptChange(event.target.value)}
+              onChange={(e) => onPromptChange(e.target.value)}
             />
-          </label>
-
-          <label className={labelClassName}>
-            Negative Prompt
+          </div>
+          <div className="grid gap-1">
+            <label className="text-2xs font-medium text-txt-3">
+              Negative Prompt
+            </label>
             <textarea
-              className={textareaClassName}
+              className="min-h-[48px] w-full resize-y rounded-sm border border-border bg-surface-0 px-2 py-1.5 text-xs text-txt-1 outline-none transition-colors placeholder:text-txt-3 focus:border-border-focus"
               rows={2}
               value={negativePrompt}
-              onChange={(event) => onNegativePromptChange(event.target.value)}
+              onChange={(e) => onNegativePromptChange(e.target.value)}
               placeholder="low quality, blurry, bad anatomy"
             />
-          </label>
+          </div>
         </div>
+        <button
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-sm bg-[#7c3aed] text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(139,92,246,0.5)] transition-all hover:bg-[#6d28d9] hover:shadow-[0_0_14px_rgba(139,92,246,0.45)] disabled:cursor-not-allowed disabled:opacity-40"
+          disabled={busy || !prompt.trim()}
+          onClick={onGenerate}
+          type="button"
+        >
+          {busy ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Play className="h-4 w-4" />
+              Generate
+            </>
+          )}
+        </button>
       </footer>
     </section>
   );

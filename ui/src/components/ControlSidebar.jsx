@@ -1,45 +1,75 @@
+import { useState } from "react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Frame,
+  SlidersHorizontal,
+} from "lucide-react";
 import { formatOptionLabel } from "../lib/appConfig";
 
-const leftRailItems = [
-  { id: "controls", label: "CTL", title: "Open controls" },
-  { id: "sampling", label: "SMP", title: "Open sampling controls" },
-  { id: "run", label: "RUN", title: "Open run controls" },
-];
+function CollapsibleSection({
+  icon: Icon,
+  label,
+  defaultOpen = true,
+  children,
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="grid gap-0">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between py-1 text-left transition-colors hover:text-txt-1"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <div className="flex items-center gap-1.5">
+          {Icon && <Icon className="h-3 w-3 text-txt-3" />}
+          <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
+            {label}
+          </span>
+        </div>
+        {open ? (
+          <ChevronUp className="h-3 w-3 text-txt-3" />
+        ) : (
+          <ChevronDown className="h-3 w-3 text-txt-3" />
+        )}
+      </button>
+      {open && <div className="grid gap-2 pb-1 pt-1">{children}</div>}
+    </section>
+  );
+}
 
-const panelTitleClassName =
-  "m-0 text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-[#98a5b7]";
+function Field({ label, children }) {
+  return (
+    <label className="grid gap-1">
+      <span className="text-2xs font-medium text-txt-3">{label}</span>
+      {children}
+    </label>
+  );
+}
 
-const labelClassName = "grid gap-[3px] text-[0.74rem] text-[#b2bdcc]";
+const inputClass =
+  "h-7 w-full rounded-sm border border-border bg-surface-0 px-2 text-xs text-txt-1 outline-none transition-colors placeholder:text-txt-3 focus:border-border-focus";
 
-const fieldClassName =
-  "min-h-7 w-full border border-[#364151] bg-[#12171d] px-1.5 py-1 text-[0.82rem] text-[#dfe6f2] outline-none placeholder:text-[#6f7c90] focus:border-[#6ea0ff]";
-
-const cardClassName =
-  "grid content-start gap-1.5 border border-[#2b3340] bg-[#1b2028] p-[7px]";
-
-const compactGridClassName = "grid grid-cols-2 gap-1.5 max-[900px]:grid-cols-1";
-
-const buttonClassName =
-  "border border-[#344051] bg-[#262d38] px-[9px] py-[5px] text-[0.8rem] text-[#dfe6f2] transition-colors hover:bg-[#2e3744] disabled:cursor-not-allowed disabled:opacity-60";
+const selectClass =
+  "h-7 w-full appearance-none rounded-sm border border-border bg-surface-0 px-2 text-xs text-txt-1 outline-none transition-colors focus:border-border-focus";
 
 function getResizerClassName(isOpen) {
-  const baseClassName =
-    "relative min-h-0 bg-[#15191f] max-[900px]:hidden before:absolute before:inset-y-0 before:left-[2px] before:right-[2px]";
-
+  const base =
+    "relative w-1.5 min-h-0 bg-surface-0 max-[900px]:hidden before:absolute before:inset-y-0 before:left-[2px] before:right-[2px] before:transition-colors";
   return isOpen
-    ? `${baseClassName} cursor-col-resize before:bg-[#2a313c] hover:before:bg-[#45638f]`
-    : `${baseClassName} cursor-default before:bg-[#20252d]`;
+    ? `${base} cursor-col-resize before:bg-border hover:before:bg-accent`
+    : `${base} cursor-default before:bg-surface-2`;
 }
 
 export function ControlSidebar({
   availableSchedules,
-  busy,
   collapsedRailWidth,
   generationOptions,
   guidanceScale,
   height,
   isOpen,
-  onGenerate,
   onGuidanceScaleChange,
   onHeightChange,
   onResizeStart,
@@ -49,7 +79,6 @@ export function ControlSidebar({
   onStepsChange,
   onToggle,
   onWidthChange,
-  prompt,
   sampler,
   seed,
   sigmaSchedule,
@@ -60,160 +89,139 @@ export function ControlSidebar({
   return (
     <>
       <aside
-        className={`grid min-h-0 w-[var(--panel-width)] overflow-hidden border-r border-[#2a313c] bg-[#1a1f26] max-[900px]:w-auto ${isOpen ? "grid-rows-[auto_minmax(0,1fr)]" : "grid-rows-[auto]"}`}
+        className="grid grid-rows-[auto_minmax(0,1fr)] min-h-0 overflow-hidden border-r border-border bg-surface-1"
         style={{
-          "--panel-width": isOpen ? `${width}px` : `${collapsedRailWidth}px`,
+          width: isOpen ? `${width}px` : `${collapsedRailWidth}px`,
         }}
       >
-        <div
-          className={`min-h-9 border-b border-[#2a313c] px-2 py-[7px] ${isOpen ? "flex items-center justify-between gap-1.5" : "grid justify-items-center gap-1.5"}`}
-        >
-          <h2 className={panelTitleClassName}>{isOpen ? "Controls" : "Ctl"}</h2>
+        {/* Panel header */}
+        <div className="flex h-8 items-center justify-between border-b border-border px-2">
+          {isOpen && (
+            <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
+              Controls
+            </span>
+          )}
           <button
-            className={`${buttonClassName} ${isOpen ? "px-2" : "w-full px-2"}`}
+            className="ml-auto flex h-5 w-5 items-center justify-center rounded-sm text-txt-3 transition-colors hover:bg-surface-3 hover:text-txt-1"
             onClick={onToggle}
             type="button"
+            title={isOpen ? "Collapse panel" : "Expand panel"}
           >
-            {isOpen ? "Hide" : "Show"}
+            {isOpen ? (
+              <ChevronLeft className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" />
+            )}
           </button>
         </div>
 
         {isOpen ? (
-          <div className="grid min-h-0 content-start gap-2 overflow-auto p-2 [scrollbar-color:#353e4d_transparent] [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:bg-[#353e4d]">
-            <div className={cardClassName}>
-              <h3 className={panelTitleClassName}>Canvas</h3>
-              <div className={compactGridClassName}>
-                <label className={labelClassName}>
-                  Width
+          <div className="grid min-h-0 content-start gap-1 overflow-auto p-2.5">
+            <CollapsibleSection icon={Frame} label="Canvas">
+              <div className="grid grid-cols-2 gap-2">
+                <Field label="Width">
                   <input
-                    className={fieldClassName}
+                    className={inputClass}
                     type="number"
                     min="256"
                     max="2048"
                     step="64"
                     value={widthValue}
-                    onChange={(event) =>
-                      onWidthChange(Number(event.target.value))
-                    }
+                    onChange={(e) => onWidthChange(Number(e.target.value))}
                   />
-                </label>
-
-                <label className={labelClassName}>
-                  Height
+                </Field>
+                <Field label="Height">
                   <input
-                    className={fieldClassName}
+                    className={inputClass}
                     type="number"
                     min="256"
                     max="2048"
                     step="64"
                     value={height}
-                    onChange={(event) =>
-                      onHeightChange(Number(event.target.value))
-                    }
+                    onChange={(e) => onHeightChange(Number(e.target.value))}
                   />
-                </label>
+                </Field>
               </div>
-            </div>
+            </CollapsibleSection>
 
-            <div className={cardClassName}>
-              <h3 className={panelTitleClassName}>Sampling</h3>
-              <div className={compactGridClassName}>
-                <label className={labelClassName}>
-                  Sampler
+            <hr className="border-border" />
+
+            <CollapsibleSection icon={SlidersHorizontal} label="Sampling">
+              <div className="grid grid-cols-2 gap-2">
+                <Field label="Sampler">
                   <select
-                    className={fieldClassName}
+                    className={selectClass}
                     value={sampler}
-                    onChange={(event) => onSamplerChange(event.target.value)}
+                    onChange={(e) => onSamplerChange(e.target.value)}
                   >
-                    {generationOptions.samplers.map((option) => (
-                      <option key={option} value={option}>
-                        {formatOptionLabel(option)}
+                    {generationOptions.samplers.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {formatOptionLabel(opt)}
                       </option>
                     ))}
                   </select>
-                </label>
-
-                <label className={labelClassName}>
-                  Scheduler
+                </Field>
+                <Field label="Scheduler">
                   <select
-                    className={fieldClassName}
+                    className={selectClass}
                     value={sigmaSchedule}
-                    onChange={(event) =>
-                      onSigmaScheduleChange(event.target.value)
-                    }
+                    onChange={(e) => onSigmaScheduleChange(e.target.value)}
                   >
-                    {availableSchedules.map((option) => (
-                      <option key={option} value={option}>
-                        {formatOptionLabel(option)}
+                    {availableSchedules.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {formatOptionLabel(opt)}
                       </option>
                     ))}
                   </select>
-                </label>
-
-                <label className={labelClassName}>
-                  Steps
+                </Field>
+                <Field label="Steps">
                   <input
-                    className={fieldClassName}
+                    className={inputClass}
                     type="number"
                     min="1"
                     max="150"
                     value={steps}
-                    onChange={(event) =>
-                      onStepsChange(Number(event.target.value))
-                    }
+                    onChange={(e) => onStepsChange(Number(e.target.value))}
                   />
-                </label>
-
-                <label className={labelClassName}>
-                  Guidance
+                </Field>
+                <Field label="Guidance">
                   <input
-                    className={fieldClassName}
+                    className={inputClass}
                     type="number"
                     min="1"
                     max="20"
                     step="0.1"
                     value={guidanceScale}
-                    onChange={(event) =>
-                      onGuidanceScaleChange(Number(event.target.value))
+                    onChange={(e) =>
+                      onGuidanceScaleChange(Number(e.target.value))
                     }
                   />
-                </label>
+                </Field>
               </div>
-
-              <label className={labelClassName}>
-                Seed
+              <Field label="Seed">
                 <input
-                  className={fieldClassName}
+                  className={inputClass}
                   value={seed}
-                  onChange={(event) => onSeedChange(event.target.value)}
+                  onChange={(e) => onSeedChange(e.target.value)}
                   placeholder="Random if blank"
                 />
-              </label>
-            </div>
-
-            <div className={cardClassName}>
-              <h3 className={panelTitleClassName}>Run</h3>
-              <button
-                className="border border-[#2f6fed] bg-[#2f6fed] px-[9px] py-[5px] text-[0.8rem] text-[#f6f8fc] transition-colors hover:bg-[#2563eb] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={busy || !prompt.trim()}
-                onClick={onGenerate}
-                type="button"
-              >
-                {busy ? "Generating" : "Generate"}
-              </button>
-            </div>
+              </Field>
+            </CollapsibleSection>
           </div>
         ) : (
-          <div className="grid content-start gap-[5px] px-[5px] py-1.5">
-            {leftRailItems.map((item) => (
+          <div className="grid content-start gap-1 p-1">
+            {[
+              { icon: Frame, title: "Canvas" },
+              { icon: SlidersHorizontal, title: "Sampling" },
+            ].map((item) => (
               <button
-                className="min-h-9 w-full border border-[#344051] bg-[#262d38] px-1 py-1.5 text-[0.72rem] tracking-[0.04em] text-[#dfe6f2] transition-colors hover:bg-[#2e3744]"
-                key={item.id}
+                className="flex h-8 w-full items-center justify-center rounded-sm text-txt-3 transition-colors hover:bg-surface-3 hover:text-txt-1"
+                key={item.title}
                 onClick={onToggle}
                 title={item.title}
                 type="button"
               >
-                {item.label}
+                <item.icon className="h-4 w-4" />
               </button>
             ))}
           </div>

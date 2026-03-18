@@ -1,27 +1,71 @@
-const panelTitleClassName =
-  "m-0 text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-[#98a5b7]";
+import { useState } from "react";
+import {
+  Bug,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Monitor,
+  Settings2,
+  Wrench,
+} from "lucide-react";
 
-const bodyTextClassName = "text-[0.8rem] text-[#d7dde7]";
+function InfoRow({ label, value, status }) {
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-sm bg-surface-0 px-2 py-1.5">
+      <span className="text-2xs text-txt-3">{label}</span>
+      <span
+        className={`text-xs font-medium ${
+          status === "ok"
+            ? "text-status-ok"
+            : status === "error"
+              ? "text-status-error"
+              : "text-txt-1"
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
 
-const cardClassName =
-  "grid content-start gap-1.5 border border-[#2b3340] bg-[#1b2028] p-[7px]";
-
-const buttonClassName =
-  "border border-[#344051] bg-[#262d38] px-[9px] py-[5px] text-[0.8rem] text-[#dfe6f2] transition-colors hover:bg-[#2e3744] disabled:cursor-not-allowed disabled:opacity-60";
-
-const rightRailItems = [
-  { id: "options", label: "OPT", title: "Open options" },
-  { id: "session", label: "SES", title: "Open session panel" },
-  { id: "debug", label: "DBG", title: "Open debug panel" },
-];
+function CollapsibleSection({
+  icon: Icon,
+  label,
+  defaultOpen = true,
+  children,
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="grid gap-0">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between py-1 text-left transition-colors hover:text-txt-1"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <div className="flex items-center gap-1.5">
+          {Icon && <Icon className="h-3 w-3 text-txt-3" />}
+          <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
+            {label}
+          </span>
+        </div>
+        {open ? (
+          <ChevronUp className="h-3 w-3 text-txt-3" />
+        ) : (
+          <ChevronDown className="h-3 w-3 text-txt-3" />
+        )}
+      </button>
+      {open && <div className="grid gap-2 pb-1 pt-1">{children}</div>}
+    </section>
+  );
+}
 
 function getResizerClassName(isOpen) {
-  const baseClassName =
-    "relative min-h-0 bg-[#15191f] max-[900px]:hidden before:absolute before:inset-y-0 before:left-[2px] before:right-[2px]";
-
+  const base =
+    "relative w-1.5 min-h-0 bg-surface-0 max-[900px]:hidden before:absolute before:inset-y-0 before:left-[2px] before:right-[2px] before:transition-colors";
   return isOpen
-    ? `${baseClassName} cursor-col-resize before:bg-[#2a313c] hover:before:bg-[#45638f]`
-    : `${baseClassName} cursor-default before:bg-[#20252d]`;
+    ? `${base} cursor-col-resize before:bg-border hover:before:bg-accent`
+    : `${base} cursor-default before:bg-surface-2`;
 }
 
 export function OptionsSidebar({
@@ -43,80 +87,86 @@ export function OptionsSidebar({
       />
 
       <aside
-        className={`grid min-h-0 w-[var(--panel-width)] overflow-hidden border-l border-[#2a313c] bg-[#1a1f26] max-[900px]:w-auto ${isOpen ? "grid-rows-[auto_minmax(0,1fr)]" : "grid-rows-[auto]"}`}
+        className="grid grid-rows-[auto_minmax(0,1fr)] min-h-0 overflow-hidden border-l border-border bg-surface-1"
         style={{
-          "--panel-width": isOpen ? `${width}px` : `${collapsedRailWidth}px`,
+          width: isOpen ? `${width}px` : `${collapsedRailWidth}px`,
         }}
       >
-        <div
-          className={`min-h-9 border-b border-[#2a313c] px-2 py-[7px] ${isOpen ? "flex items-center justify-between gap-1.5" : "grid justify-items-center gap-1.5"}`}
-        >
-          <h2 className={panelTitleClassName}>{isOpen ? "Options" : "Opt"}</h2>
+        {/* Panel header */}
+        <div className="flex h-8 items-center justify-between border-b border-border px-2">
+          {isOpen && (
+            <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
+              Options
+            </span>
+          )}
           <button
-            className={`${buttonClassName} ${isOpen ? "px-2" : "w-full px-2"}`}
+            className="ml-auto flex h-5 w-5 items-center justify-center rounded-sm text-txt-3 transition-colors hover:bg-surface-3 hover:text-txt-1"
             onClick={onToggle}
             type="button"
+            title={isOpen ? "Collapse panel" : "Expand panel"}
           >
-            {isOpen ? "Hide" : "Show"}
+            {isOpen ? (
+              <ChevronRight className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronLeft className="h-3.5 w-3.5" />
+            )}
           </button>
         </div>
 
         {isOpen ? (
-          <div className="grid min-h-0 content-start gap-2 overflow-auto p-2 [scrollbar-color:#353e4d_transparent] [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:bg-[#353e4d]">
-            <div className={cardClassName}>
-              <h3 className={panelTitleClassName}>Reserved Space</h3>
-              <p className={bodyTextClassName}>
-                Use this panel later for batch tools, upscaling, masking,
-                presets, or export actions.
-              </p>
-            </div>
-
-            <div className={cardClassName}>
-              <h3 className={panelTitleClassName}>Current Session</h3>
-              <div className="grid gap-[5px]">
-                <div className="grid gap-0.5 border border-[#313948] bg-[#151a21] px-1.5 py-[5px]">
-                  <span className="text-[0.8rem] text-[#d7dde7]">Backend</span>
-                  <strong className="text-[0.82rem] text-[#dfe6f2]">
-                    {health?.status === "ok" ? "Online" : "Offline"}
-                  </strong>
-                </div>
-
-                <div className="grid gap-0.5 border border-[#313948] bg-[#151a21] px-1.5 py-[5px]">
-                  <span className="text-[0.8rem] text-[#d7dde7]">Device</span>
-                  <strong className="text-[0.82rem] text-[#dfe6f2]">
-                    {modelInfo?.resolved_device || "Unknown"}
-                  </strong>
-                </div>
-
-                <div className="grid gap-0.5 border border-[#313948] bg-[#151a21] px-1.5 py-[5px]">
-                  <span className="text-[0.8rem] text-[#d7dde7]">
-                    Last Result
-                  </span>
-                  <strong className="text-[0.82rem] text-[#dfe6f2]">
-                    {generation?.image_id || "None"}
-                  </strong>
-                </div>
+          <div className="grid min-h-0 content-start gap-1 overflow-auto p-2.5">
+            <CollapsibleSection icon={Wrench} label="Tools">
+              <div className="grid place-items-center gap-1 rounded-sm border border-dashed border-border bg-surface-0 px-3 py-4 text-center">
+                <Settings2 className="h-4 w-4 text-txt-3" />
+                <span className="text-xs text-txt-3">
+                  Batch, upscale, masking, and presets coming later
+                </span>
               </div>
-            </div>
+            </CollapsibleSection>
 
-            <div className={cardClassName}>
-              <h3 className={panelTitleClassName}>Debug Snapshot</h3>
-              <pre className="max-h-[220px] overflow-auto whitespace-pre-wrap break-words border border-[#313948] bg-[#11151b] p-1.5 text-[0.8rem] text-[#d7dde7] [scrollbar-color:#353e4d_transparent] [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:bg-[#353e4d]">
+            <hr className="border-border" />
+
+            <CollapsibleSection icon={Monitor} label="Session">
+              <div className="grid gap-1">
+                <InfoRow
+                  label="Backend"
+                  value={health?.status === "ok" ? "Online" : "Offline"}
+                  status={health?.status === "ok" ? "ok" : "error"}
+                />
+                <InfoRow
+                  label="Device"
+                  value={modelInfo?.resolved_device || "Unknown"}
+                />
+                <InfoRow
+                  label="Last Result"
+                  value={generation?.image_id || "None"}
+                />
+              </div>
+            </CollapsibleSection>
+
+            <hr className="border-border" />
+
+            <CollapsibleSection icon={Bug} label="Debug" defaultOpen={false}>
+              <pre className="max-h-[200px] overflow-auto rounded-sm border border-border bg-surface-0 p-2 text-2xs leading-relaxed text-txt-2">
                 {JSON.stringify({ health, modelInfo, generation }, null, 2)}
               </pre>
-            </div>
+            </CollapsibleSection>
           </div>
         ) : (
-          <div className="grid content-start gap-[5px] px-[5px] py-1.5">
-            {rightRailItems.map((item) => (
+          <div className="grid content-start gap-1 p-1">
+            {[
+              { icon: Wrench, title: "Tools" },
+              { icon: Monitor, title: "Session" },
+              { icon: Bug, title: "Debug" },
+            ].map((item) => (
               <button
-                className="min-h-9 w-full border border-[#344051] bg-[#262d38] px-1 py-1.5 text-[0.72rem] tracking-[0.04em] text-[#dfe6f2] transition-colors hover:bg-[#2e3744]"
-                key={item.id}
+                className="flex h-8 w-full items-center justify-center rounded-sm text-txt-3 transition-colors hover:bg-surface-3 hover:text-txt-1"
+                key={item.title}
                 onClick={onToggle}
                 title={item.title}
                 type="button"
               >
-                {item.label}
+                <item.icon className="h-4 w-4" />
               </button>
             ))}
           </div>

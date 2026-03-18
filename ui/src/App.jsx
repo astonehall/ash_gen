@@ -171,7 +171,7 @@ function App() {
       : "Live generation previews can slot in here later.";
 
   return (
-    <main className="grid h-screen grid-rows-[auto_minmax(0,1fr)] bg-[#171b21]">
+    <main className="grid h-screen grid-rows-[auto_minmax(0,1fr)] bg-surface-0">
       <TopSettingsBar
         apiBaseUrl={apiBaseUrl}
         apiKey={apiKey}
@@ -185,16 +185,14 @@ function App() {
         statusMessage={statusMessage}
       />
 
-      <section className="grid min-h-0 grid-cols-[auto_6px_minmax(0,1fr)_6px_auto] max-[900px]:grid-cols-1 max-[900px]:grid-rows-[auto_minmax(0,1fr)_auto]">
+      <section className="grid min-h-0 grid-cols-[auto_6px_minmax(0,1fr)_6px_auto]">
         <ControlSidebar
           availableSchedules={availableSchedules}
-          busy={busy}
           collapsedRailWidth={collapsedRailWidth}
           generationOptions={generationOptions}
           guidanceScale={guidanceScale}
           height={height}
           isOpen={leftSidebarOpen}
-          onGenerate={run(generateImage)}
           onGuidanceScaleChange={setGuidanceScale}
           onHeightChange={setHeight}
           onResizeStart={startResize("left")}
@@ -204,7 +202,6 @@ function App() {
           onStepsChange={setSteps}
           onToggle={() => setLeftSidebarOpen((current) => !current)}
           onWidthChange={setWidth}
-          prompt={prompt}
           sampler={sampler}
           seed={seed}
           sigmaSchedule={sigmaSchedule}
@@ -214,9 +211,11 @@ function App() {
         />
 
         <WorkspaceView
+          busy={busy}
           gallery={gallery}
           mainPreviewUrl={mainPreviewUrl}
           negativePrompt={negativePrompt}
+          onGenerate={run(generateImage)}
           onNegativePromptChange={setNegativePrompt}
           onPromptChange={setPrompt}
           onSelectImage={setSelectedImageId}
