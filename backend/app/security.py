@@ -1,3 +1,5 @@
+from secrets import compare_digest
+
 from fastapi import Header, HTTPException, status
 
 from .config import settings
@@ -13,7 +15,7 @@ def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
             detail="API auth is enabled but API_KEY is not configured on the server.",
         )
 
-    if x_api_key != settings.api_key:
+    if not compare_digest(x_api_key or "", settings.api_key):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing X-API-Key header.",

@@ -2,7 +2,7 @@
 
 SDXL image generation app with a FastAPI backend and a desktop-first UI shell built with React, Vite, and Tauri.
 
-Current version: **0.0.3**
+Current version: **0.0.4**
 
 ## Current Status
 
@@ -10,7 +10,7 @@ Current version: **0.0.3**
 - Generation supports both stub mode and real SDXL single-file checkpoints.
 - Startup validation checks checkpoint configuration when stub mode is disabled.
 - Local browser UI can connect to the backend, preview generated files, and browse a compact gallery.
-- Current frontend is a full-screen desktop-style shell with a compact top settings bar, collapsible/resizable sidebars, central preview/gallery workspace, and bottom prompt dock.
+- Current frontend is a full-screen desktop-style shell with a compact top settings bar, collapsible/resizable sidebars, and a central workspace with an anchored preview plus draggable gallery and prompt panels.
 
 ## Quick Start - (My dev environment Linux Mint 22 )
 
@@ -57,7 +57,32 @@ To test real image generation with a local checkpoint:
 
 The API will write a PNG image to `outputs/` when model inference succeeds.
 
-## UI (0.0.3-dev)
+## One-Command Dev Startup
+
+After activating your project virtual environment, run from the project root:
+
+- Cross-platform: `python dev.py`
+- Linux convenience wrapper: `./dev.sh`
+- Windows convenience wrapper: `dev.bat`
+
+This starts the FastAPI backend, starts the Vite frontend, opens `http://127.0.0.1:5173` in your browser, and stops both processes when you exit the launcher.
+
+For frontend-to-backend routing in web mode, you can override the default API target with `VITE_API_BASE_URL` before starting Vite.
+If port `8000` is already in use, set `ASHGEN_BACKEND_PORT` before running `python dev.py`.
+
+## Smoke Tests
+
+Run a lightweight full-project smoke pass from the repo root:
+
+- `python smoke_test.py`
+
+This runs backend route smoke tests and then a frontend production build.
+
+For manual UI verification after layout or interaction changes, use:
+
+- `docs/qa/ui-manual-checklist.md`
+
+## UI (0.0.4-dev)
 
 Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop shell.
 
@@ -72,11 +97,14 @@ The UI currently focuses on backend connectivity and generation flow testing.
 
 Current desktop shell includes:
 
-- Scrollable top settings/status bar
+- Compact top connection bar for backend and API key
 - Collapsible and resizable left and right side panels
-- Central preview area for selected output
-- Compact gallery of finished generations
-- Bottom-docked positive and negative prompt fields
+- Draggable grouped sidebar cards for reordering control sections
+- Persisted sidebar card order and open/closed state between sessions
+- Central preview area for selected output that remains anchored in the workspace
+- Compact gallery of finished generations with adjustable height and internal scrolling
+- Draggable gallery and prompt panels with adjustable heights
+- Persisted workspace dock order and panel heights between sessions
 - Initial sampler and scheduler dropdowns for generation testing
 
 ## Current UI Layout
@@ -86,23 +114,23 @@ The current desktop UI follows a compact full-screen layout:
 1. **Top bar**
    - Backend connection
    - API key input
-   - Status and model readout
-   - Scrollable compact settings tiles
+   - Brand and connection controls only
 
 2. **Left sidebar**
-   - Main generation controls
+   - Main generation controls grouped into draggable cards
    - Canvas and sampling parameters
-   - Generate action
    - Collapsible and resizable
 
 3. **Main workspace**
    - Preview area for selected output
-   - Gallery of completed generations
-   - Positive and negative prompt dock fixed to the bottom
+   - Preview remains anchored as the primary stage
+   - Gallery of completed generations with adjustable height and internal scrolling
+   - Prompt panel with primary generate action, draggable and resizable inside the workspace
 
 4. **Right sidebar**
-   - Reserved space for future advanced tools/options
-   - Temporary session/debug information
+   - Future advanced tools/options grouped into draggable cards
+   - Consolidated debug and runtime information
+   - Health/model refresh actions and current generation diagnostics
    - Collapsible and resizable
 
 History and detailed metadata are intentionally de-emphasized for now while the main generation workspace is being established.
@@ -113,7 +141,9 @@ The current frontend stack is:
 
 - Tauri for the desktop shell
 - React for the UI layer
-- Tailwind CSS + shadcn/ui for styling and components
+- Tailwind CSS with a shadcn-style reusable component layer
+- Radix UI primitives for collapsible behavior
+- class-variance-authority + tailwind-merge for maintainable variants
 - TanStack Query for backend/API state
 - React Hook Form + Zod for forms and validation
 - Lucide React for icons
@@ -128,6 +158,14 @@ Framer Motion is intentionally deferred until the core UX is stable, and direct 
 - Current planning direction is to keep clear extension boundaries now and implement backend-first extension points before any frontend plugin runtime.
 
 ## Changelog
+
+### 0.0.4
+
+- Bumped backend, UI, and desktop app version metadata to 0.0.4.
+- Added a root `dev.sh` launcher to start backend and frontend together and auto-open the browser on Linux.
+- Refined the desktop workspace so Preview stays anchored while Gallery and Prompt reorder and resize independently.
+- Split large workspace and sidebar UI files into smaller focused components for maintainability.
+- Added a manual UI QA checklist at `docs/qa/ui-manual-checklist.md` for layout and interaction regression checks.
 
 ### 0.0.3
 
