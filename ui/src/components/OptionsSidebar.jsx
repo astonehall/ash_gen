@@ -20,7 +20,10 @@ function InfoRow({ label, value, tone = "neutral" }) {
       <span className="text-[11px] uppercase tracking-[0.16em] text-txt-3">
         {label}
       </span>
-      <Badge className="max-w-full text-left normal-case tracking-[0.08em]" tone={tone}>
+      <Badge
+        className="max-w-full text-left normal-case tracking-[0.08em]"
+        tone={tone}
+      >
         {value}
       </Badge>
     </div>
