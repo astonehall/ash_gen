@@ -1,4 +1,17 @@
-import { useRef, useState } from "react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import {
   ChevronLeft,
   ChevronRight,
@@ -65,39 +78,35 @@ export function ControlSidebar({
       typeof value.canvas === "boolean" &&
       typeof value.sampling === "boolean",
   );
-  const [draggingId, setDraggingId] = useState(null);
-  const draggingRef = useRef(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 6,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const toggleSection = (id) =>
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const handleDragStart = (e, id) => {
-    draggingRef.current = id;
-    setDraggingId(id);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e, id) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    if (id !== draggingRef.current) {
-      setSectionOrder((prev) => {
-        const next = [...prev];
-        const from = next.indexOf(draggingRef.current);
-        const to = next.indexOf(id);
-        if (from === -1 || to === -1) return prev;
-        next.splice(from, 1);
-        next.splice(to, 0, draggingRef.current);
-        return next;
-      });
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) {
+      return;
     }
-  };
 
-  const handleDrop = (e) => e.preventDefault();
+    setSectionOrder((current) => {
+      const oldIndex = current.indexOf(active.id);
+      const newIndex = current.indexOf(over.id);
 
-  const handleDragEnd = () => {
-    draggingRef.current = null;
-    setDraggingId(null);
+      if (oldIndex === -1 || newIndex === -1) {
+        return current;
+      }
+
+      return arrayMove(current, oldIndex, newIndex);
+    });
   };
 
   const sectionMeta = {
@@ -227,25 +236,31 @@ export function ControlSidebar({
         </div>
 
         {isOpen ? (
-          <div className="grid min-h-0 content-start gap-2 overflow-auto p-2.5">
-            {sectionOrder.map((id) => (
-              <SidebarSection
-                key={id}
-                id={id}
-                icon={sectionMeta[id].icon}
-                title={sectionMeta[id].label}
-                open={openSections[id]}
-                onOpenChange={() => toggleSection(id)}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                onDragEnd={handleDragEnd}
-                isDragging={draggingId === id}
-              >
-                {sectionContent[id]}
-              </SidebarSection>
-            ))}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={sectionOrder}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid min-h-0 content-start gap-2 overflow-auto p-2.5">
+                {sectionOrder.map((id) => (
+                  <SidebarSection
+                    key={id}
+                    id={id}
+                    icon={sectionMeta[id].icon}
+                    title={sectionMeta[id].label}
+                    open={openSections[id]}
+                    onOpenChange={() => toggleSection(id)}
+                  >
+                    {sectionContent[id]}
+                  </SidebarSection>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         ) : (
           <div className="grid content-start gap-1 p-1">
             {[
