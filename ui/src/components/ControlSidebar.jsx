@@ -12,20 +12,15 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Frame,
-  SlidersHorizontal,
-} from "lucide-react";
-import { FieldControl } from "./FieldControl";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SidebarSection } from "./SidebarSection";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Select } from "./ui/select";
-import { formatOptionLabel } from "../lib/appConfig";
 import { useLocalStorageState } from "../hooks/useLocalStorageState";
+import {
+  CONTROL_SECTION_META,
+  ControlSectionContent,
+} from "./sidebar/ControlSectionContent";
+import { SidebarPanelHeader } from "./sidebar/SidebarPanelHeader";
+import { Button } from "./ui/button";
 
 function getResizerClassName(isOpen) {
   const base =
@@ -109,94 +104,6 @@ export function ControlSidebar({
     });
   };
 
-  const sectionMeta = {
-    canvas: { icon: Frame, label: "Canvas" },
-    sampling: { icon: SlidersHorizontal, label: "Sampling" },
-  };
-
-  const sectionContent = {
-    canvas: (
-      <div className="grid grid-cols-2 gap-2">
-        <FieldControl label="Width">
-          <Input
-            type="number"
-            min="256"
-            max="2048"
-            step="64"
-            value={widthValue}
-            onChange={(e) => onWidthChange(Number(e.target.value))}
-          />
-        </FieldControl>
-        <FieldControl label="Height">
-          <Input
-            type="number"
-            min="256"
-            max="2048"
-            step="64"
-            value={height}
-            onChange={(e) => onHeightChange(Number(e.target.value))}
-          />
-        </FieldControl>
-      </div>
-    ),
-    sampling: (
-      <>
-        <div className="grid grid-cols-2 gap-2">
-          <FieldControl label="Sampler">
-            <Select
-              value={sampler}
-              onChange={(e) => onSamplerChange(e.target.value)}
-            >
-              {generationOptions.samplers.map((opt) => (
-                <option key={opt} value={opt}>
-                  {formatOptionLabel(opt)}
-                </option>
-              ))}
-            </Select>
-          </FieldControl>
-          <FieldControl label="Scheduler">
-            <Select
-              value={sigmaSchedule}
-              onChange={(e) => onSigmaScheduleChange(e.target.value)}
-            >
-              {availableSchedules.map((opt) => (
-                <option key={opt} value={opt}>
-                  {formatOptionLabel(opt)}
-                </option>
-              ))}
-            </Select>
-          </FieldControl>
-          <FieldControl label="Steps">
-            <Input
-              type="number"
-              min="1"
-              max="150"
-              value={steps}
-              onChange={(e) => onStepsChange(Number(e.target.value))}
-            />
-          </FieldControl>
-          <FieldControl label="Guidance">
-            <Input
-              type="number"
-              min="1"
-              max="20"
-              step="0.1"
-              value={guidanceScale}
-              onChange={(e) => onGuidanceScaleChange(Number(e.target.value))}
-            />
-          </FieldControl>
-        </div>
-        <FieldControl label="Seed" description="Leave empty for random">
-          <Input
-            value={seed}
-            onChange={(e) => onSeedChange(e.target.value)}
-            placeholder="Random if blank"
-          />
-        </FieldControl>
-      </>
-    ),
-  };
-
   return (
     <>
       <aside
@@ -205,39 +112,15 @@ export function ControlSidebar({
           width: isOpen ? `${width}px` : `${collapsedRailWidth}px`,
         }}
       >
-        <div className="grid gap-2 border-b border-border bg-gradient-to-b from-surface-2 to-surface-1 px-2.5 py-2">
-          <div className="flex items-center justify-between gap-2">
-            {isOpen ? (
-              <div className="grid gap-1">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-200">
-                  Controls
-                </span>
-                <span className="text-[10px] uppercase tracking-[0.14em] text-txt-3">
-                  Generation workspace
-                </span>
-              </div>
-            ) : null}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-auto h-7 w-7"
-              onClick={onToggle}
-              type="button"
-              title={isOpen ? "Collapse panel" : "Expand panel"}
-            >
-              {isOpen ? (
-                <ChevronLeft className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronRight className="h-3.5 w-3.5" />
-              )}
-            </Button>
-          </div>
-          {isOpen ? (
-            <Badge className="self-start" tone="accent">
-              Generation settings
-            </Badge>
-          ) : null}
-        </div>
+        <SidebarPanelHeader
+          badgeLabel="Generation settings"
+          CollapseIcon={ChevronLeft}
+          ExpandIcon={ChevronRight}
+          isOpen={isOpen}
+          onToggle={onToggle}
+          subtitle="Generation workspace"
+          title="Controls"
+        />
 
         {isOpen ? (
           <DndContext
@@ -254,12 +137,30 @@ export function ControlSidebar({
                   <SidebarSection
                     key={id}
                     id={id}
-                    icon={sectionMeta[id].icon}
-                    title={sectionMeta[id].label}
+                    icon={CONTROL_SECTION_META[id].icon}
+                    title={CONTROL_SECTION_META[id].label}
                     open={openSections[id]}
                     onOpenChange={() => toggleSection(id)}
                   >
-                    {sectionContent[id]}
+                    <ControlSectionContent
+                      availableSchedules={availableSchedules}
+                      generationOptions={generationOptions}
+                      guidanceScale={guidanceScale}
+                      height={height}
+                      onGuidanceScaleChange={onGuidanceScaleChange}
+                      onHeightChange={onHeightChange}
+                      onSamplerChange={onSamplerChange}
+                      onSeedChange={onSeedChange}
+                      onSigmaScheduleChange={onSigmaScheduleChange}
+                      onStepsChange={onStepsChange}
+                      onWidthChange={onWidthChange}
+                      sampler={sampler}
+                      seed={seed}
+                      sectionId={id}
+                      sigmaSchedule={sigmaSchedule}
+                      steps={steps}
+                      widthValue={widthValue}
+                    />
                   </SidebarSection>
                 ))}
               </div>
@@ -268,8 +169,8 @@ export function ControlSidebar({
         ) : (
           <div className="grid content-start gap-1 p-1">
             {[
-              { icon: Frame, title: "Canvas" },
-              { icon: SlidersHorizontal, title: "Sampling" },
+              { icon: CONTROL_SECTION_META.canvas.icon, title: "Canvas" },
+              { icon: CONTROL_SECTION_META.sampling.icon, title: "Sampling" },
             ].map((item) => (
               <Button
                 variant="ghost"
