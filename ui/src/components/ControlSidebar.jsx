@@ -1,44 +1,14 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
   Frame,
+  GripVertical,
   SlidersHorizontal,
 } from "lucide-react";
 import { formatOptionLabel } from "../lib/appConfig";
-
-function CollapsibleSection({
-  icon: Icon,
-  label,
-  defaultOpen = true,
-  children,
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <section className="grid gap-0">
-      <button
-        type="button"
-        className="flex w-full items-center justify-between py-1 text-left transition-colors hover:text-txt-1"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <div className="flex items-center gap-1.5">
-          {Icon && <Icon className="h-3 w-3 text-txt-3" />}
-          <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
-            {label}
-          </span>
-        </div>
-        {open ? (
-          <ChevronUp className="h-3 w-3 text-txt-3" />
-        ) : (
-          <ChevronDown className="h-3 w-3 text-txt-3" />
-        )}
-      </button>
-      {open && <div className="grid gap-2 pb-1 pt-1">{children}</div>}
-    </section>
-  );
-}
 
 function Field({ label, children }) {
   return (
@@ -61,6 +31,59 @@ function getResizerClassName(isOpen) {
   return isOpen
     ? `${base} cursor-col-resize before:bg-border hover:before:bg-accent`
     : `${base} cursor-default before:bg-surface-2`;
+}
+
+function DraggableSection({
+  id,
+  icon: Icon,
+  label,
+  open,
+  onToggle,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+  isDragging,
+  children,
+}) {
+  return (
+    <div
+      draggable
+      onDragStart={(e) => onDragStart(e, id)}
+      onDragOver={(e) => onDragOver(e, id)}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={`rounded-sm border border-border-strong bg-surface-2 transition-opacity ${
+        isDragging ? "opacity-30" : "opacity-100"
+      }`}
+    >
+      <div className="flex items-center gap-1 px-1.5 py-1.5">
+        <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-txt-3 hover:text-txt-2 active:cursor-grabbing" />
+        <button
+          type="button"
+          className="flex flex-1 items-center justify-between text-left"
+          onClick={onToggle}
+        >
+          <div className="flex items-center gap-1.5">
+            {Icon && <Icon className="h-3 w-3 text-txt-3" />}
+            <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
+              {label}
+            </span>
+          </div>
+          {open ? (
+            <ChevronUp className="h-3 w-3 text-txt-3" />
+          ) : (
+            <ChevronDown className="h-3 w-3 text-txt-3" />
+          )}
+        </button>
+      </div>
+      {open && (
+        <div className="grid gap-2 border-t border-border px-2 pb-2.5 pt-2">
+          {children}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function ControlSidebar({
@@ -86,6 +109,141 @@ export function ControlSidebar({
   width,
   widthValue,
 }) {
+  const [sectionOrder, setSectionOrder] = useState(["canvas", "sampling"]);
+  const [openSections, setOpenSections] = useState({
+    canvas: true,
+    sampling: true,
+  });
+  const [draggingId, setDraggingId] = useState(null);
+  const draggingRef = useRef(null);
+
+  const toggleSection = (id) =>
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const handleDragStart = (e, id) => {
+    draggingRef.current = id;
+    setDraggingId(id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e, id) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (id !== draggingRef.current) {
+      setSectionOrder((prev) => {
+        const next = [...prev];
+        const from = next.indexOf(draggingRef.current);
+        const to = next.indexOf(id);
+        if (from === -1 || to === -1) return prev;
+        next.splice(from, 1);
+        next.splice(to, 0, draggingRef.current);
+        return next;
+      });
+    }
+  };
+
+  const handleDrop = (e) => e.preventDefault();
+
+  const handleDragEnd = () => {
+    draggingRef.current = null;
+    setDraggingId(null);
+  };
+
+  const sectionMeta = {
+    canvas: { icon: Frame, label: "Canvas" },
+    sampling: { icon: SlidersHorizontal, label: "Sampling" },
+  };
+
+  const sectionContent = {
+    canvas: (
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Width">
+          <input
+            className={inputClass}
+            type="number"
+            min="256"
+            max="2048"
+            step="64"
+            value={widthValue}
+            onChange={(e) => onWidthChange(Number(e.target.value))}
+          />
+        </Field>
+        <Field label="Height">
+          <input
+            className={inputClass}
+            type="number"
+            min="256"
+            max="2048"
+            step="64"
+            value={height}
+            onChange={(e) => onHeightChange(Number(e.target.value))}
+          />
+        </Field>
+      </div>
+    ),
+    sampling: (
+      <>
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="Sampler">
+            <select
+              className={selectClass}
+              value={sampler}
+              onChange={(e) => onSamplerChange(e.target.value)}
+            >
+              {generationOptions.samplers.map((opt) => (
+                <option key={opt} value={opt}>
+                  {formatOptionLabel(opt)}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Scheduler">
+            <select
+              className={selectClass}
+              value={sigmaSchedule}
+              onChange={(e) => onSigmaScheduleChange(e.target.value)}
+            >
+              {availableSchedules.map((opt) => (
+                <option key={opt} value={opt}>
+                  {formatOptionLabel(opt)}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Steps">
+            <input
+              className={inputClass}
+              type="number"
+              min="1"
+              max="150"
+              value={steps}
+              onChange={(e) => onStepsChange(Number(e.target.value))}
+            />
+          </Field>
+          <Field label="Guidance">
+            <input
+              className={inputClass}
+              type="number"
+              min="1"
+              max="20"
+              step="0.1"
+              value={guidanceScale}
+              onChange={(e) => onGuidanceScaleChange(Number(e.target.value))}
+            />
+          </Field>
+        </div>
+        <Field label="Seed">
+          <input
+            className={inputClass}
+            value={seed}
+            onChange={(e) => onSeedChange(e.target.value)}
+            placeholder="Random if blank"
+          />
+        </Field>
+      </>
+    ),
+  };
+
   return (
     <>
       <aside
@@ -94,7 +252,6 @@ export function ControlSidebar({
           width: isOpen ? `${width}px` : `${collapsedRailWidth}px`,
         }}
       >
-        {/* Panel header */}
         <div className="flex h-8 items-center justify-between border-b border-border px-2">
           {isOpen && (
             <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
@@ -116,97 +273,24 @@ export function ControlSidebar({
         </div>
 
         {isOpen ? (
-          <div className="grid min-h-0 content-start gap-1 overflow-auto p-2.5">
-            <CollapsibleSection icon={Frame} label="Canvas">
-              <div className="grid grid-cols-2 gap-2">
-                <Field label="Width">
-                  <input
-                    className={inputClass}
-                    type="number"
-                    min="256"
-                    max="2048"
-                    step="64"
-                    value={widthValue}
-                    onChange={(e) => onWidthChange(Number(e.target.value))}
-                  />
-                </Field>
-                <Field label="Height">
-                  <input
-                    className={inputClass}
-                    type="number"
-                    min="256"
-                    max="2048"
-                    step="64"
-                    value={height}
-                    onChange={(e) => onHeightChange(Number(e.target.value))}
-                  />
-                </Field>
-              </div>
-            </CollapsibleSection>
-
-            <hr className="border-border" />
-
-            <CollapsibleSection icon={SlidersHorizontal} label="Sampling">
-              <div className="grid grid-cols-2 gap-2">
-                <Field label="Sampler">
-                  <select
-                    className={selectClass}
-                    value={sampler}
-                    onChange={(e) => onSamplerChange(e.target.value)}
-                  >
-                    {generationOptions.samplers.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {formatOptionLabel(opt)}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Scheduler">
-                  <select
-                    className={selectClass}
-                    value={sigmaSchedule}
-                    onChange={(e) => onSigmaScheduleChange(e.target.value)}
-                  >
-                    {availableSchedules.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {formatOptionLabel(opt)}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Steps">
-                  <input
-                    className={inputClass}
-                    type="number"
-                    min="1"
-                    max="150"
-                    value={steps}
-                    onChange={(e) => onStepsChange(Number(e.target.value))}
-                  />
-                </Field>
-                <Field label="Guidance">
-                  <input
-                    className={inputClass}
-                    type="number"
-                    min="1"
-                    max="20"
-                    step="0.1"
-                    value={guidanceScale}
-                    onChange={(e) =>
-                      onGuidanceScaleChange(Number(e.target.value))
-                    }
-                  />
-                </Field>
-              </div>
-              <Field label="Seed">
-                <input
-                  className={inputClass}
-                  value={seed}
-                  onChange={(e) => onSeedChange(e.target.value)}
-                  placeholder="Random if blank"
-                />
-              </Field>
-            </CollapsibleSection>
+          <div className="grid min-h-0 content-start gap-2 overflow-auto p-2">
+            {sectionOrder.map((id) => (
+              <DraggableSection
+                key={id}
+                id={id}
+                icon={sectionMeta[id].icon}
+                label={sectionMeta[id].label}
+                open={openSections[id]}
+                onToggle={() => toggleSection(id)}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                isDragging={draggingId === id}
+              >
+                {sectionContent[id]}
+              </DraggableSection>
+            ))}
           </div>
         ) : (
           <div className="grid content-start gap-1 p-1">
