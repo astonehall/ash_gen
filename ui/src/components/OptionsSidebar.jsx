@@ -221,9 +221,6 @@ export function OptionsSidebar({
                 <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-200">
                   Options
                 </span>
-                <span className="text-[11px] text-txt-3">
-                  Organize advanced tools to suit your workflow.
-                </span>
               </div>
             ) : null}
             <Button

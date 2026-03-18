@@ -212,9 +212,6 @@ export function ControlSidebar({
                 <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-200">
                   Controls
                 </span>
-                <span className="text-[11px] text-txt-3">
-                  Drag cards to reorder your workflow.
-                </span>
               </div>
             ) : null}
             <Button

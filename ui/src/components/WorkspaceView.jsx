@@ -333,11 +333,7 @@ function PromptPanel({
           />
         </label>
         <div className="grid min-h-0 content-end gap-2 max-[980px]:min-w-0">
-          <Badge tone="accent">Primary action</Badge>
-          <span className="text-xs text-txt-3">
-            Drag this panel anywhere in the workspace and resize it when you
-            need more writing room.
-          </span>
+          <Badge tone="accent">GENERATE</Badge>
           <Button
             className="h-11 w-full shadow-[0_0_28px_rgba(139,92,246,0.2)]"
             disabled={busy || !prompt.trim()}
