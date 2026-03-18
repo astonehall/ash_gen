@@ -10,7 +10,7 @@ Current version: **0.0.4**
 - Generation supports both stub mode and real SDXL single-file checkpoints.
 - Startup validation checks checkpoint configuration when stub mode is disabled.
 - Local browser UI can connect to the backend, preview generated files, and browse a compact gallery.
-- Current frontend is a full-screen desktop-style shell with a compact top settings bar, collapsible/resizable sidebars, and a central workspace made of draggable preview, gallery, and prompt panels.
+- Current frontend is a full-screen desktop-style shell with a compact top settings bar, collapsible/resizable sidebars, and a central workspace with an anchored preview plus draggable gallery and prompt panels.
 
 ## Quick Start - (My dev environment Linux Mint 22 )
 
@@ -78,6 +78,10 @@ Run a lightweight full-project smoke pass from the repo root:
 
 This runs backend route smoke tests and then a frontend production build.
 
+For manual UI verification after layout or interaction changes, use:
+
+- `docs/qa/ui-manual-checklist.md`
+
 ## UI (0.0.4-dev)
 
 Initial UI implementation lives in `ui/` using React + Vite with a Tauri desktop shell.
@@ -97,9 +101,10 @@ Current desktop shell includes:
 - Collapsible and resizable left and right side panels
 - Draggable grouped sidebar cards for reordering control sections
 - Persisted sidebar card order and open/closed state between sessions
-- Central preview area for selected output
+- Central preview area for selected output that remains anchored in the workspace
 - Compact gallery of finished generations with adjustable height and internal scrolling
-- Draggable prompt panel with adjustable height and primary generate action
+- Draggable gallery and prompt panels with adjustable heights
+- Persisted workspace dock order and panel heights between sessions
 - Initial sampler and scheduler dropdowns for generation testing
 
 ## Current UI Layout
@@ -118,6 +123,7 @@ The current desktop UI follows a compact full-screen layout:
 
 3. **Main workspace**
    - Preview area for selected output
+   - Preview remains anchored as the primary stage
    - Gallery of completed generations with adjustable height and internal scrolling
    - Prompt panel with primary generate action, draggable and resizable inside the workspace
 
@@ -157,6 +163,9 @@ Framer Motion is intentionally deferred until the core UX is stable, and direct 
 
 - Bumped backend, UI, and desktop app version metadata to 0.0.4.
 - Added a root `dev.sh` launcher to start backend and frontend together and auto-open the browser on Linux.
+- Refined the desktop workspace so Preview stays anchored while Gallery and Prompt reorder and resize independently.
+- Split large workspace and sidebar UI files into smaller focused components for maintainability.
+- Added a manual UI QA checklist at `docs/qa/ui-manual-checklist.md` for layout and interaction regression checks.
 
 ### 0.0.3
 

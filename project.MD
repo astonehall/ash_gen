@@ -7,7 +7,7 @@
 - Stack selected: Tauri + React with FastAPI backend sidecar
 - Goal: desktop-first app launch on Linux, Windows, and macOS (no CLI required for end users)
 - Plugin strategy: define extension architecture now, implement plugin runtime in later phase
-- Current UI direction: traditional desktop application layout
+- Current UI direction: traditional desktop application layout with compact, reorderable workspace panels
 
 ## Frontend Stack (Locked)
 
@@ -43,10 +43,9 @@
 
 ## UI/UX Baseline (Locked)
 
-- **Top bar:** compact scrollable settings/status strip
+- **Top bar:** compact connection/settings strip
 - **Left sidebar:** main generation controls, collapsible and resizable
-- **Main workspace:** preview area + finished generation gallery
-- **Bottom dock:** fixed positive and negative prompt fields
+- **Main workspace:** anchored preview area plus draggable gallery and prompt panels
 - **Right sidebar:** reserved advanced options area, collapsible and resizable
 
 Notes:
@@ -54,6 +53,7 @@ Notes:
 - Keep the interface compact and desktop-like.
 - Avoid large rounded mobile-style controls and wasted space.
 - Advanced options should use progressive disclosure and live in the right sidebar over time.
+- Preserve persisted layout state where it improves day-to-day workflow: sidebar order/state, dock order, and dock heights.
 
 ## Project Goal - Long Term
 
@@ -72,6 +72,7 @@ Notes:
 - Validate platform-specific desktop builds for Linux first, then Windows and macOS parity
 - Add saved local workspace/configuration state
 - Expand the image gallery workflow and image selection behavior
+- Keep the manual UI verification checklist current as layout interactions evolve
 
 ## Project Philosophy
 
@@ -92,3 +93,4 @@ Is being done on a Linux Mint 22 machine and needs to run in a virtual env. This
 
 - Preferred cross-platform dev launcher: `python dev.py`
 - Lightweight smoke pass: `python smoke_test.py`
+- Manual UI regression checklist: `docs/qa/ui-manual-checklist.md`
