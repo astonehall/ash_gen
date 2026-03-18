@@ -93,9 +93,10 @@ The UI currently focuses on backend connectivity and generation flow testing.
 
 Current desktop shell includes:
 
-- Scrollable top settings/status bar
+- Compact top connection bar for backend and API key
 - Collapsible and resizable left and right side panels
 - Draggable grouped sidebar cards for reordering control sections
+- Persisted sidebar card order and open/closed state between sessions
 - Central preview area for selected output
 - Compact gallery of finished generations
 - Bottom-docked positive and negative prompt fields
@@ -108,8 +109,7 @@ The current desktop UI follows a compact full-screen layout:
 1. **Top bar**
    - Backend connection
    - API key input
-   - Status and model readout
-   - Scrollable compact settings tiles
+   - Brand and connection controls only
 
 2. **Left sidebar**
    - Main generation controls grouped into draggable cards
@@ -123,7 +123,8 @@ The current desktop UI follows a compact full-screen layout:
 
 4. **Right sidebar**
    - Future advanced tools/options grouped into draggable cards
-   - Temporary session/debug information
+   - Consolidated debug and runtime information
+   - Health/model refresh actions and current generation diagnostics
    - Collapsible and resizable
 
 History and detailed metadata are intentionally de-emphasized for now while the main generation workspace is being established.

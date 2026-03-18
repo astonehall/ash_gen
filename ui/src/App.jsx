@@ -175,14 +175,8 @@ function App() {
       <TopSettingsBar
         apiBaseUrl={apiBaseUrl}
         apiKey={apiKey}
-        busy={busy}
-        health={health}
-        modelInfo={modelInfo}
         onApiBaseUrlChange={setApiBaseUrl}
         onApiKeyChange={setApiKey}
-        onHealthCheck={run(checkHealth)}
-        onModelInfo={run(fetchModelInfo)}
-        statusMessage={statusMessage}
       />
 
       <section className="grid min-h-0 grid-cols-[auto_6px_minmax(0,1fr)_6px_auto]">
@@ -230,8 +224,11 @@ function App() {
           health={health}
           isOpen={rightSidebarOpen}
           modelInfo={modelInfo}
+          onHealthCheck={run(checkHealth)}
+          onModelInfo={run(fetchModelInfo)}
           onResizeStart={startResize("right")}
           onToggle={() => setRightSidebarOpen((current) => !current)}
+          statusMessage={statusMessage}
           width={rightSidebarWidth}
         />
       </section>

@@ -3,7 +3,8 @@ import {
   Bug,
   ChevronLeft,
   ChevronRight,
-  Monitor,
+  Cpu,
+  HeartPulse,
   Settings2,
   Wrench,
 } from "lucide-react";
@@ -11,14 +12,17 @@ import { SidebarSection } from "./SidebarSection";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
+import { useLocalStorageState } from "../hooks/useLocalStorageState";
 
 function InfoRow({ label, value, tone = "neutral" }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-sm border border-border bg-surface-0 px-2.5 py-2">
+    <div className="grid justify-items-start gap-1.5 rounded-sm border border-border bg-surface-0 px-2.5 py-2">
       <span className="text-[11px] uppercase tracking-[0.16em] text-txt-3">
         {label}
       </span>
-      <Badge tone={tone}>{value}</Badge>
+      <Badge className="max-w-full text-left normal-case tracking-[0.08em]" tone={tone}>
+        {value}
+      </Badge>
     </div>
   );
 }
@@ -37,20 +41,33 @@ export function OptionsSidebar({
   health,
   isOpen,
   modelInfo,
+  onHealthCheck,
+  onModelInfo,
   onResizeStart,
   onToggle,
+  statusMessage,
   width,
 }) {
-  const [sectionOrder, setSectionOrder] = useState([
-    "tools",
-    "session",
-    "debug",
-  ]);
-  const [openSections, setOpenSections] = useState({
-    tools: true,
-    session: true,
-    debug: false,
-  });
+  const [sectionOrder, setSectionOrder] = useLocalStorageState(
+    "ashgen:options:section-order",
+    ["tools", "debug"],
+    (value) =>
+      Array.isArray(value) &&
+      value.length === 2 &&
+      value.every((item) => ["tools", "debug"].includes(item)),
+  );
+  const [openSections, setOpenSections] = useLocalStorageState(
+    "ashgen:options:open-sections",
+    {
+      tools: true,
+      debug: true,
+    },
+    (value) =>
+      Boolean(value) &&
+      typeof value === "object" &&
+      typeof value.tools === "boolean" &&
+      typeof value.debug === "boolean",
+  );
   const [draggingId, setDraggingId] = useState(null);
   const draggingRef = useRef(null);
 
@@ -88,7 +105,6 @@ export function OptionsSidebar({
 
   const sectionMeta = {
     tools: { icon: Wrench, label: "Tools" },
-    session: { icon: Monitor, label: "Session" },
     debug: { icon: Bug, label: "Debug" },
   };
 
@@ -110,29 +126,65 @@ export function OptionsSidebar({
         </CardContent>
       </Card>
     ),
-    session: (
-      <div className="grid gap-1">
-        <InfoRow
-          label="Backend"
-          value={health?.status === "ok" ? "Online" : "Offline"}
-          tone={health?.status === "ok" ? "success" : "error"}
-        />
-        <InfoRow
-          label="Device"
-          value={modelInfo?.resolved_device || "Unknown"}
-          tone="accent"
-        />
-        <InfoRow
-          label="Last Result"
-          value={generation?.image_id || "None"}
-          tone="neutral"
-        />
-      </div>
-    ),
     debug: (
-      <pre className="max-h-[200px] overflow-auto rounded-sm border border-border bg-surface-0 p-2 text-2xs leading-relaxed text-txt-2">
-        {JSON.stringify({ health, modelInfo, generation }, null, 2)}
-      </pre>
+      <div className="grid gap-3">
+        <div className="grid gap-1">
+          <InfoRow label="Status" value={statusMessage} tone="accent" />
+          <InfoRow
+            label="Backend"
+            value={health?.status === "ok" ? "Online" : "Offline"}
+            tone={health?.status === "ok" ? "success" : "error"}
+          />
+          <InfoRow
+            label="Model"
+            value={
+              modelInfo?.model_checkpoint || modelInfo?.model_id || "Not loaded"
+            }
+            tone="accent"
+          />
+          <InfoRow
+            label="Device"
+            value={modelInfo?.resolved_device || "Unknown"}
+            tone="neutral"
+          />
+          <InfoRow
+            label="Last Result"
+            value={generation?.image_id || "None"}
+            tone="neutral"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 max-[1180px]:grid-cols-1">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onHealthCheck}
+            type="button"
+            className="w-full justify-start"
+          >
+            <HeartPulse className="h-3.5 w-3.5" />
+            Refresh Health
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onModelInfo}
+            type="button"
+            className="w-full justify-start"
+          >
+            <Cpu className="h-3.5 w-3.5" />
+            Refresh Model
+          </Button>
+        </div>
+
+        <pre className="max-h-[220px] overflow-auto rounded-sm border border-border bg-surface-0 p-2 text-left text-2xs leading-relaxed text-txt-2">
+          {JSON.stringify(
+            { statusMessage, health, modelInfo, generation },
+            null,
+            2,
+          )}
+        </pre>
+      </div>
     ),
   };
 
@@ -204,7 +256,6 @@ export function OptionsSidebar({
           <div className="grid content-start gap-1 p-1">
             {[
               { icon: Wrench, title: "Tools" },
-              { icon: Monitor, title: "Session" },
               { icon: Bug, title: "Debug" },
             ].map((item) => (
               <Button

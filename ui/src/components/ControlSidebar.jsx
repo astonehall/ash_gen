@@ -12,6 +12,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select } from "./ui/select";
 import { formatOptionLabel } from "../lib/appConfig";
+import { useLocalStorageState } from "../hooks/useLocalStorageState";
 
 function getResizerClassName(isOpen) {
   const base =
@@ -44,11 +45,26 @@ export function ControlSidebar({
   width,
   widthValue,
 }) {
-  const [sectionOrder, setSectionOrder] = useState(["canvas", "sampling"]);
-  const [openSections, setOpenSections] = useState({
-    canvas: true,
-    sampling: true,
-  });
+  const [sectionOrder, setSectionOrder] = useLocalStorageState(
+    "ashgen:controls:section-order",
+    ["canvas", "sampling"],
+    (value) =>
+      Array.isArray(value) &&
+      value.length === 2 &&
+      value.every((item) => ["canvas", "sampling"].includes(item)),
+  );
+  const [openSections, setOpenSections] = useLocalStorageState(
+    "ashgen:controls:open-sections",
+    {
+      canvas: true,
+      sampling: true,
+    },
+    (value) =>
+      Boolean(value) &&
+      typeof value === "object" &&
+      typeof value.canvas === "boolean" &&
+      typeof value.sampling === "boolean",
+  );
   const [draggingId, setDraggingId] = useState(null);
   const draggingRef = useRef(null);
 
