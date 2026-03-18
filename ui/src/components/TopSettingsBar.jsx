@@ -1,4 +1,7 @@
-import { Activity, Cpu, Globe, KeyRound, Loader2 } from "lucide-react";
+import { Activity, Cpu, Globe, KeyRound, Loader2, Orbit } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 export function TopSettingsBar({
   apiBaseUrl,
@@ -13,68 +16,79 @@ export function TopSettingsBar({
   statusMessage,
 }) {
   const isOnline = health?.status === "ok";
-  const modelLabel = modelInfo?.model_checkpoint || modelInfo?.model_id || null;
+  const modelLabel =
+    modelInfo?.model_checkpoint || modelInfo?.model_id || "No model loaded";
 
   return (
-    <header className="flex items-center gap-px border-b border-border bg-surface-1">
-      {/* App brand */}
-      <div className="flex items-center gap-2 border-r border-border px-3 py-1.5">
-        <span className="text-sm font-bold tracking-tight text-accent">
-          ASH<span className="text-txt-1">GEN</span>
-        </span>
-      </div>
-
-      {/* Connection fields */}
-      <div className="flex items-center gap-1 border-r border-border px-2 py-1">
-        <Globe className="h-3.5 w-3.5 shrink-0 text-txt-3" />
-        <input
-          className="h-6 w-44 rounded-sm border border-border bg-surface-0 px-1.5 text-xs text-txt-1 outline-none placeholder:text-txt-3 focus:border-border-focus"
-          value={apiBaseUrl}
-          onChange={(e) => onApiBaseUrlChange(e.target.value)}
-          placeholder="http://127.0.0.1:8000"
-        />
-      </div>
-
-      <div className="flex items-center gap-1 border-r border-border px-2 py-1">
-        <KeyRound className="h-3.5 w-3.5 shrink-0 text-txt-3" />
-        <input
-          className="h-6 w-28 rounded-sm border border-border bg-surface-0 px-1.5 text-xs text-txt-1 outline-none placeholder:text-txt-3 focus:border-border-focus"
-          value={apiKey}
-          onChange={(e) => onApiKeyChange(e.target.value)}
-          placeholder="API key"
-          type="password"
-        />
-      </div>
-
-      {/* Status badges */}
-      <div className="flex items-center gap-2 border-r border-border px-3 py-1">
-        <div className="flex items-center gap-1.5">
-          <span
-            className={`inline-block h-1.5 w-1.5 rounded-full ${isOnline ? "bg-status-ok" : "bg-status-error"}`}
-          />
-          <span className="text-2xs font-medium uppercase tracking-wide text-txt-2">
-            {isOnline ? "Online" : "Offline"}
-          </span>
+    <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border bg-surface-1/95 px-3 py-2 backdrop-blur-sm">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 items-center gap-2 rounded-sm border border-violet-500/25 bg-gradient-to-r from-violet-600/18 via-violet-500/10 to-transparent px-3">
+          <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-violet-500/15 text-violet-200">
+            <Orbit className="h-3.5 w-3.5" />
+          </div>
+          <div className="grid leading-none">
+            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-violet-200">
+              AshGen
+            </span>
+            <span className="text-[11px] text-txt-3">
+              Desktop generation workspace
+            </span>
+          </div>
         </div>
-        {modelLabel && (
-          <span
-            className="max-w-[140px] truncate text-2xs text-txt-2"
-            title={modelLabel}
-          >
-            {modelLabel}
+
+        <Badge tone={isOnline ? "success" : "error"}>
+          {isOnline ? "Online" : "Offline"}
+        </Badge>
+      </div>
+
+      <div className="grid min-w-0 grid-cols-[minmax(220px,280px)_minmax(160px,180px)_minmax(0,1fr)] items-center gap-2">
+        <label className="grid gap-1">
+          <span className="flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-txt-3">
+            <Globe className="h-3 w-3" />
+            Backend
           </span>
-        )}
+          <Input
+            className="h-8 bg-surface-0/90"
+            value={apiBaseUrl}
+            onChange={(event) => onApiBaseUrlChange(event.target.value)}
+            placeholder="http://127.0.0.1:8000"
+          />
+        </label>
+
+        <label className="grid gap-1">
+          <span className="flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-txt-3">
+            <KeyRound className="h-3 w-3" />
+            API Key
+          </span>
+          <Input
+            className="h-8 bg-surface-0/90"
+            value={apiKey}
+            onChange={(event) => onApiKeyChange(event.target.value)}
+            placeholder="Optional"
+            type="password"
+          />
+        </label>
+
+        <div className="grid min-w-0 gap-1 rounded-sm border border-border bg-surface-0/80 px-3 py-2">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-txt-3">
+              Status
+            </span>
+            <span
+              className="max-w-[16rem] truncate text-[11px] uppercase tracking-[0.16em] text-violet-200"
+              title={modelLabel}
+            >
+              {modelLabel}
+            </span>
+          </div>
+          <span className="truncate text-xs text-txt-2">{statusMessage}</span>
+        </div>
       </div>
 
-      {/* Status message */}
-      <div className="flex min-w-0 flex-1 items-center px-3 py-1">
-        <span className="truncate text-2xs text-txt-3">{statusMessage}</span>
-      </div>
-
-      {/* Action buttons */}
-      <div className="flex items-center gap-1.5 px-2">
-        <button
-          className="flex items-center gap-1.5 rounded-sm border border-[#2d6a4f] bg-[#1b4332] px-3 py-1 text-xs font-semibold text-[#52d68a] transition-colors hover:bg-[#245740] hover:text-[#6ee7a8] disabled:opacity-40"
+      <div className="flex items-center gap-2">
+        <Button
+          variant="success"
+          size="sm"
           disabled={busy}
           onClick={onHealthCheck}
           type="button"
@@ -86,9 +100,10 @@ export function TopSettingsBar({
             <Activity className="h-3.5 w-3.5" />
           )}
           Health
-        </button>
-        <button
-          className="flex items-center gap-1.5 rounded-sm border border-[#374b8a] bg-[#1e2e6e] px-3 py-1 text-xs font-semibold text-[#7aa8ff] transition-colors hover:bg-[#26398a] hover:text-[#99bfff] disabled:opacity-40"
+        </Button>
+        <Button
+          variant="info"
+          size="sm"
           disabled={busy}
           onClick={onModelInfo}
           type="button"
@@ -96,7 +111,7 @@ export function TopSettingsBar({
         >
           <Cpu className="h-3.5 w-3.5" />
           Model
-        </button>
+        </Button>
       </div>
     </header>
   );

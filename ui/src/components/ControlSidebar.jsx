@@ -1,29 +1,17 @@
 import { useRef, useState } from "react";
 import {
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Frame,
-  GripVertical,
   SlidersHorizontal,
 } from "lucide-react";
+import { FieldControl } from "./FieldControl";
+import { SidebarSection } from "./SidebarSection";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Select } from "./ui/select";
 import { formatOptionLabel } from "../lib/appConfig";
-
-function Field({ label, children }) {
-  return (
-    <label className="grid gap-1">
-      <span className="text-2xs font-medium text-txt-3">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-const inputClass =
-  "h-7 w-full rounded-sm border border-border bg-surface-0 px-2 text-xs text-txt-1 outline-none transition-colors placeholder:text-txt-3 focus:border-border-focus";
-
-const selectClass =
-  "h-7 w-full appearance-none rounded-sm border border-border bg-surface-0 px-2 text-xs text-txt-1 outline-none transition-colors focus:border-border-focus";
 
 function getResizerClassName(isOpen) {
   const base =
@@ -31,59 +19,6 @@ function getResizerClassName(isOpen) {
   return isOpen
     ? `${base} cursor-col-resize before:bg-border hover:before:bg-accent`
     : `${base} cursor-default before:bg-surface-2`;
-}
-
-function DraggableSection({
-  id,
-  icon: Icon,
-  label,
-  open,
-  onToggle,
-  onDragStart,
-  onDragOver,
-  onDrop,
-  onDragEnd,
-  isDragging,
-  children,
-}) {
-  return (
-    <div
-      draggable
-      onDragStart={(e) => onDragStart(e, id)}
-      onDragOver={(e) => onDragOver(e, id)}
-      onDrop={onDrop}
-      onDragEnd={onDragEnd}
-      className={`rounded-sm border border-border-strong bg-surface-2 transition-opacity ${
-        isDragging ? "opacity-30" : "opacity-100"
-      }`}
-    >
-      <div className="flex items-center gap-1 px-1.5 py-1.5">
-        <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-txt-3 hover:text-txt-2 active:cursor-grabbing" />
-        <button
-          type="button"
-          className="flex flex-1 items-center justify-between text-left"
-          onClick={onToggle}
-        >
-          <div className="flex items-center gap-1.5">
-            {Icon && <Icon className="h-3 w-3 text-txt-3" />}
-            <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
-              {label}
-            </span>
-          </div>
-          {open ? (
-            <ChevronUp className="h-3 w-3 text-txt-3" />
-          ) : (
-            <ChevronDown className="h-3 w-3 text-txt-3" />
-          )}
-        </button>
-      </div>
-      {open && (
-        <div className="grid gap-2 border-t border-border px-2 pb-2.5 pt-2">
-          {children}
-        </div>
-      )}
-    </div>
-  );
 }
 
 export function ControlSidebar({
@@ -157,9 +92,8 @@ export function ControlSidebar({
   const sectionContent = {
     canvas: (
       <div className="grid grid-cols-2 gap-2">
-        <Field label="Width">
-          <input
-            className={inputClass}
+        <FieldControl label="Width">
+          <Input
             type="number"
             min="256"
             max="2048"
@@ -167,10 +101,9 @@ export function ControlSidebar({
             value={widthValue}
             onChange={(e) => onWidthChange(Number(e.target.value))}
           />
-        </Field>
-        <Field label="Height">
-          <input
-            className={inputClass}
+        </FieldControl>
+        <FieldControl label="Height">
+          <Input
             type="number"
             min="256"
             max="2048"
@@ -178,15 +111,14 @@ export function ControlSidebar({
             value={height}
             onChange={(e) => onHeightChange(Number(e.target.value))}
           />
-        </Field>
+        </FieldControl>
       </div>
     ),
     sampling: (
       <>
         <div className="grid grid-cols-2 gap-2">
-          <Field label="Sampler">
-            <select
-              className={selectClass}
+          <FieldControl label="Sampler">
+            <Select
               value={sampler}
               onChange={(e) => onSamplerChange(e.target.value)}
             >
@@ -195,11 +127,10 @@ export function ControlSidebar({
                   {formatOptionLabel(opt)}
                 </option>
               ))}
-            </select>
-          </Field>
-          <Field label="Scheduler">
-            <select
-              className={selectClass}
+            </Select>
+          </FieldControl>
+          <FieldControl label="Scheduler">
+            <Select
               value={sigmaSchedule}
               onChange={(e) => onSigmaScheduleChange(e.target.value)}
             >
@@ -208,21 +139,19 @@ export function ControlSidebar({
                   {formatOptionLabel(opt)}
                 </option>
               ))}
-            </select>
-          </Field>
-          <Field label="Steps">
-            <input
-              className={inputClass}
+            </Select>
+          </FieldControl>
+          <FieldControl label="Steps">
+            <Input
               type="number"
               min="1"
               max="150"
               value={steps}
               onChange={(e) => onStepsChange(Number(e.target.value))}
             />
-          </Field>
-          <Field label="Guidance">
-            <input
-              className={inputClass}
+          </FieldControl>
+          <FieldControl label="Guidance">
+            <Input
               type="number"
               min="1"
               max="20"
@@ -230,16 +159,15 @@ export function ControlSidebar({
               value={guidanceScale}
               onChange={(e) => onGuidanceScaleChange(Number(e.target.value))}
             />
-          </Field>
+          </FieldControl>
         </div>
-        <Field label="Seed">
-          <input
-            className={inputClass}
+        <FieldControl label="Seed" description="Leave empty for random">
+          <Input
             value={seed}
             onChange={(e) => onSeedChange(e.target.value)}
             placeholder="Random if blank"
           />
-        </Field>
+        </FieldControl>
       </>
     ),
   };
@@ -252,36 +180,46 @@ export function ControlSidebar({
           width: isOpen ? `${width}px` : `${collapsedRailWidth}px`,
         }}
       >
-        <div className="flex h-8 items-center justify-between border-b border-border px-2">
-          {isOpen && (
-            <span className="text-2xs font-semibold uppercase tracking-wider text-txt-3">
-              Controls
-            </span>
-          )}
-          <button
-            className="ml-auto flex h-5 w-5 items-center justify-center rounded-sm text-txt-3 transition-colors hover:bg-surface-3 hover:text-txt-1"
-            onClick={onToggle}
-            type="button"
-            title={isOpen ? "Collapse panel" : "Expand panel"}
-          >
+        <div className="grid gap-2 border-b border-border bg-gradient-to-b from-surface-2 to-surface-1 px-2.5 py-2">
+          <div className="flex items-center justify-between gap-2">
             {isOpen ? (
-              <ChevronLeft className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5" />
-            )}
-          </button>
+              <div className="grid gap-1">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-200">
+                  Controls
+                </span>
+                <span className="text-[11px] text-txt-3">
+                  Drag cards to reorder your workflow.
+                </span>
+              </div>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto h-7 w-7"
+              onClick={onToggle}
+              type="button"
+              title={isOpen ? "Collapse panel" : "Expand panel"}
+            >
+              {isOpen ? (
+                <ChevronLeft className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5" />
+              )}
+            </Button>
+          </div>
+          {isOpen ? <Badge tone="accent">Generation settings</Badge> : null}
         </div>
 
         {isOpen ? (
-          <div className="grid min-h-0 content-start gap-2 overflow-auto p-2">
+          <div className="grid min-h-0 content-start gap-2 overflow-auto p-2.5">
             {sectionOrder.map((id) => (
-              <DraggableSection
+              <SidebarSection
                 key={id}
                 id={id}
                 icon={sectionMeta[id].icon}
-                label={sectionMeta[id].label}
+                title={sectionMeta[id].label}
                 open={openSections[id]}
-                onToggle={() => toggleSection(id)}
+                onOpenChange={() => toggleSection(id)}
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
@@ -289,7 +227,7 @@ export function ControlSidebar({
                 isDragging={draggingId === id}
               >
                 {sectionContent[id]}
-              </DraggableSection>
+              </SidebarSection>
             ))}
           </div>
         ) : (
@@ -298,15 +236,17 @@ export function ControlSidebar({
               { icon: Frame, title: "Canvas" },
               { icon: SlidersHorizontal, title: "Sampling" },
             ].map((item) => (
-              <button
-                className="flex h-8 w-full items-center justify-center rounded-sm text-txt-3 transition-colors hover:bg-surface-3 hover:text-txt-1"
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-full text-txt-3 hover:text-violet-200"
                 key={item.title}
                 onClick={onToggle}
                 title={item.title}
                 type="button"
               >
                 <item.icon className="h-4 w-4" />
-              </button>
+              </Button>
             ))}
           </div>
         )}

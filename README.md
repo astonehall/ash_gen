@@ -95,6 +95,7 @@ Current desktop shell includes:
 
 - Scrollable top settings/status bar
 - Collapsible and resizable left and right side panels
+- Draggable grouped sidebar cards for reordering control sections
 - Central preview area for selected output
 - Compact gallery of finished generations
 - Bottom-docked positive and negative prompt fields
@@ -111,18 +112,17 @@ The current desktop UI follows a compact full-screen layout:
    - Scrollable compact settings tiles
 
 2. **Left sidebar**
-   - Main generation controls
+   - Main generation controls grouped into draggable cards
    - Canvas and sampling parameters
-   - Generate action
    - Collapsible and resizable
 
 3. **Main workspace**
    - Preview area for selected output
    - Gallery of completed generations
-   - Positive and negative prompt dock fixed to the bottom
+   - Bottom prompt dock with primary generate action
 
 4. **Right sidebar**
-   - Reserved space for future advanced tools/options
+   - Future advanced tools/options grouped into draggable cards
    - Temporary session/debug information
    - Collapsible and resizable
 
@@ -134,7 +134,9 @@ The current frontend stack is:
 
 - Tauri for the desktop shell
 - React for the UI layer
-- Tailwind CSS + shadcn/ui for styling and components
+- Tailwind CSS with a shadcn-style reusable component layer
+- Radix UI primitives for collapsible behavior
+- class-variance-authority + tailwind-merge for maintainable variants
 - TanStack Query for backend/API state
 - React Hook Form + Zod for forms and validation
 - Lucide React for icons

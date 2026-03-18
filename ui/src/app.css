@@ -5,9 +5,9 @@
 @layer base {
   :root {
     color-scheme: dark;
-    font-family: "Inter", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-    background-color: #0e1015;
-    color: #e2e8f0;
+    font-family: "IBM Plex Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+    background-color: #09090f;
+    color: #f3f0ff;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -25,8 +25,19 @@
 
   body {
     margin: 0;
-    background-color: #0e1015;
-    color: #e2e8f0;
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(139, 92, 246, 0.14),
+        transparent 24%
+      ),
+      radial-gradient(
+        circle at top right,
+        rgba(124, 58, 237, 0.1),
+        transparent 20%
+      ),
+      linear-gradient(180deg, #0c0b13 0%, #09090f 45%, #07070b 100%);
+    color: #f3f0ff;
   }
 
   button,
@@ -49,15 +60,15 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: #323a4a;
+    background-color: #3a3a57;
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #4c8dff;
+    background-color: #8b5cf6;
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: #323a4a transparent;
+    scrollbar-color: #3a3a57 transparent;
   }
 }

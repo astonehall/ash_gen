@@ -5,31 +5,31 @@ export default {
     extend: {
       colors: {
         surface: {
-          0: "#0e1015",
-          1: "#14171e",
-          2: "#1a1e27",
-          3: "#222733",
-          4: "#2a3040",
+          0: "#09090f",
+          1: "#11111a",
+          2: "#171724",
+          3: "#222235",
+          4: "#2a2a41",
         },
         border: {
-          DEFAULT: "#262c38",
-          strong: "#323a4a",
-          focus: "#4c8dff",
+          DEFAULT: "#27273c",
+          strong: "#3a3a57",
+          focus: "#8b5cf6",
         },
         txt: {
-          1: "#e2e8f0",
-          2: "#94a3b8",
-          3: "#64748b",
+          1: "#f3f0ff",
+          2: "#b9b4cf",
+          3: "#7f7a99",
         },
         accent: {
-          DEFAULT: "#3b82f6",
-          hover: "#2563eb",
-          muted: "#1e3a5f",
+          DEFAULT: "#8b5cf6",
+          hover: "#7c3aed",
+          muted: "#2b174d",
         },
         status: {
-          ok: "#22c55e",
-          error: "#ef4444",
-          warn: "#f59e0b",
+          ok: "#34d399",
+          error: "#fb7185",
+          warn: "#fbbf24",
         },
       },
       fontSize: {
