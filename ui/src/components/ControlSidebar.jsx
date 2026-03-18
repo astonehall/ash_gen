@@ -212,6 +212,9 @@ export function ControlSidebar({
                 <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-200">
                   Controls
                 </span>
+                <span className="text-[10px] uppercase tracking-[0.14em] text-txt-3">
+                  Generation workspace
+                </span>
               </div>
             ) : null}
             <Button
@@ -229,7 +232,11 @@ export function ControlSidebar({
               )}
             </Button>
           </div>
-          {isOpen ? <Badge tone="accent">Generation settings</Badge> : null}
+          {isOpen ? (
+            <Badge className="self-start" tone="accent">
+              Generation settings
+            </Badge>
+          ) : null}
         </div>
 
         {isOpen ? (

@@ -56,12 +56,16 @@ function ResizeHandle({ onMouseDown, title }) {
     <button
       type="button"
       aria-label={title}
-      className="group relative h-[18px] w-full shrink-0 cursor-row-resize rounded-sm transition-colors"
+      className="group relative mt-1 h-[18px] w-full shrink-0 cursor-row-resize rounded-sm border border-border/80 bg-surface-2/70 transition-colors hover:border-violet-400/60 hover:bg-violet-500/10"
       onMouseDown={onMouseDown}
       title={title}
     >
-      <span className="pointer-events-none absolute inset-x-1 top-1/2 h-px -translate-y-1/2 rounded-full bg-border/80 transition-colors group-hover:bg-violet-400/80" />
-      <span className="pointer-events-none absolute inset-x-3 top-1/2 h-2 -translate-y-1/2 rounded-sm bg-violet-500/8 opacity-0 transition-opacity group-hover:opacity-100" />
+      <span className="pointer-events-none absolute left-1/2 top-1/2 h-px w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-border-strong transition-colors group-hover:bg-violet-400/90" />
+      <span className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-violet-300/90" />
+        <span className="h-1.5 w-1.5 rounded-full bg-violet-300/90" />
+        <span className="h-1.5 w-1.5 rounded-full bg-violet-300/90" />
+      </span>
     </button>
   );
 }
@@ -215,21 +219,26 @@ function WorkspaceSection({
 
 function PreviewPanel({ mainPreviewUrl, previewMessage }) {
   return (
-    <div className="flex h-full min-h-0 w-full items-center justify-center rounded-sm border border-border-strong bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.12),transparent_32%),linear-gradient(180deg,rgba(23,23,36,0.96),rgba(9,9,15,0.96))]">
+    <div className="relative flex h-full min-h-0 w-full items-center justify-center overflow-hidden rounded-sm border border-border-strong bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.14),transparent_30%),linear-gradient(180deg,rgba(23,23,36,0.96),rgba(9,9,15,0.98))] p-4">
       {mainPreviewUrl ? (
-        <img
-          className="max-h-full max-w-full rounded-sm object-contain"
-          src={mainPreviewUrl}
-          alt="Selected generation"
-        />
+        <div className="relative flex h-full max-h-full w-full items-center justify-center rounded-sm border border-violet-500/20 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_34%),linear-gradient(180deg,rgba(18,18,28,0.92),rgba(8,8,14,0.92))] px-6 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <div className="pointer-events-none absolute left-4 top-4 rounded-sm border border-violet-400/25 bg-violet-500/10 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-violet-100">
+            Current preview
+          </div>
+          <img
+            className="max-h-full max-w-[min(100%,72vh)] rounded-sm object-contain shadow-[0_18px_40px_rgba(0,0,0,0.4)]"
+            src={mainPreviewUrl}
+            alt="Selected generation"
+          />
+        </div>
       ) : (
-        <div className="grid place-items-center gap-3 p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-sm border border-violet-500/25 bg-violet-500/10 text-violet-200 shadow-[0_0_24px_rgba(139,92,246,0.12)]">
+        <div className="grid place-items-center gap-4 rounded-sm border border-dashed border-violet-500/24 bg-violet-500/6 px-10 py-12 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <div className="flex h-14 w-14 items-center justify-center rounded-sm border border-violet-500/30 bg-violet-500/10 text-violet-200 shadow-[0_0_24px_rgba(139,92,246,0.12)]">
             <Sparkles className="h-5 w-5" />
           </div>
-          <div className="grid gap-1">
+          <div className="grid gap-1.5">
             <span className="text-sm font-medium text-txt-1">Preview area</span>
-            <span className="max-w-md text-xs text-txt-3">
+            <span className="max-w-md text-xs leading-relaxed text-txt-3">
               {previewMessage}
             </span>
           </div>
@@ -248,38 +257,59 @@ function GalleryPanel({
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
       {gallery.length ? (
-        <div className="grid min-h-0 flex-1 w-full grid-cols-[repeat(auto-fit,minmax(136px,136px))] justify-center gap-2 overflow-y-auto pr-1">
+        <div className="grid min-h-0 flex-1 w-full grid-cols-[repeat(auto-fit,minmax(168px,168px))] justify-center gap-3 overflow-y-auto pr-1 max-[1380px]:grid-cols-[repeat(auto-fit,minmax(152px,152px))] max-[1180px]:grid-cols-[repeat(auto-fit,minmax(144px,144px))]">
           {gallery.map((item) => (
             <button
               className={cn(
-                "group grid gap-2 rounded-sm border p-2 text-left transition-colors",
+                "group relative grid gap-2.5 rounded-sm border p-2.5 text-left transition-all",
                 item.id === selectedGalleryItem?.id
-                  ? "border-violet-500/45 bg-violet-500/10 shadow-[0_0_0_1px_rgba(139,92,246,0.2)]"
-                  : "border-border bg-surface-2 hover:border-border-strong hover:bg-surface-3/70",
+                  ? "border-violet-400/70 bg-violet-500/12 shadow-[0_0_0_1px_rgba(139,92,246,0.3),0_10px_24px_rgba(31,18,58,0.24)]"
+                  : "border-border bg-surface-2 hover:border-violet-500/35 hover:bg-surface-3/70 hover:shadow-[0_8px_22px_rgba(0,0,0,0.2)]",
               )}
               key={item.id}
               onClick={() => onSelectImage(item.id)}
               type="button"
             >
+              {item.id === selectedGalleryItem?.id ? (
+                <Badge
+                  className="absolute right-2.5 top-2.5 z-10"
+                  tone="accent"
+                >
+                  Selected
+                </Badge>
+              ) : null}
               {item.imageUrl ? (
-                <img
-                  className="aspect-square w-full rounded-sm border border-border object-cover"
-                  src={item.imageUrl}
-                  alt={item.prompt}
-                />
+                <div className="overflow-hidden rounded-sm border border-border bg-surface-0">
+                  <img
+                    className="aspect-[4/5] w-full object-cover object-center transition-transform duration-200 group-hover:scale-[1.02]"
+                    src={item.imageUrl}
+                    alt={item.prompt}
+                  />
+                </div>
               ) : (
-                <div className="grid aspect-square content-center justify-items-center gap-1 rounded-sm border border-dashed border-border-strong bg-surface-0 p-2 text-center">
+                <div className="grid aspect-[4/5] content-center justify-items-center gap-1 rounded-sm border border-dashed border-border-strong bg-surface-0 p-2 text-center">
                   <Layers className="h-4 w-4 text-txt-3" />
                   <span className="text-2xs text-txt-3">
                     {item.fileName || "Artifact"}
                   </span>
                 </div>
               )}
-              <div className="grid gap-1">
-                <span className="truncate text-xs text-txt-2 group-hover:text-txt-1">
+              <div className="grid gap-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className={cn(
+                      "text-[10px] font-medium uppercase tracking-[0.14em]",
+                      item.id === selectedGalleryItem?.id
+                        ? "text-violet-200"
+                        : "text-txt-3",
+                    )}
+                  >
+                    {item.createdAt}
+                  </span>
+                </div>
+                <span className="min-h-[2rem] text-xs font-medium leading-snug text-txt-1 transition-colors group-hover:text-violet-100">
                   {item.prompt}
                 </span>
-                <span className="text-2xs text-txt-3">{item.createdAt}</span>
               </div>
             </button>
           ))}
@@ -310,48 +340,57 @@ function PromptPanel({
 }) {
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
-      <div className="grid min-h-0 flex-1 w-full gap-3 min-[981px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_220px]">
-        <label className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-txt-3">
-            Positive Prompt
-          </span>
-          <Textarea
-            className="h-full min-h-[112px] resize-none overflow-y-auto"
-            value={prompt}
-            onChange={(event) => onPromptChange(event.target.value)}
-          />
-        </label>
-        <label className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-txt-3">
-            Negative Prompt
-          </span>
-          <Textarea
-            className="h-full min-h-[112px] resize-none overflow-y-auto"
-            value={negativePrompt}
-            onChange={(event) => onNegativePromptChange(event.target.value)}
-            placeholder="low quality, blurry, bad anatomy"
-          />
-        </label>
-        <div className="grid min-h-0 content-end gap-2 max-[980px]:min-w-0">
-          <Badge tone="accent">GENERATE</Badge>
-          <Button
-            className="h-11 w-full shadow-[0_0_28px_rgba(139,92,246,0.2)]"
-            disabled={busy || !prompt.trim()}
-            onClick={onGenerate}
-            type="button"
-          >
-            {busy ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4" />
-                Generate
-              </>
-            )}
-          </Button>
+      <div className="grid min-h-0 flex-1 w-full gap-3 min-[1080px]:grid-cols-[minmax(0,1fr)_240px]">
+        <div className="grid min-h-0 gap-3 min-[760px]:grid-cols-2">
+          <label className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-1.5">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-txt-3">
+              Positive Prompt
+            </span>
+            <Textarea
+              className="h-full min-h-[112px] resize-none overflow-y-auto"
+              value={prompt}
+              onChange={(event) => onPromptChange(event.target.value)}
+            />
+          </label>
+          <label className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-1.5">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-txt-3">
+              Negative Prompt
+            </span>
+            <Textarea
+              className="h-full min-h-[112px] resize-none overflow-y-auto"
+              value={negativePrompt}
+              onChange={(event) => onNegativePromptChange(event.target.value)}
+              placeholder="low quality, blurry, bad anatomy"
+            />
+          </label>
+        </div>
+
+        <div className="grid min-h-0 content-stretch">
+          <div className="flex min-h-0 flex-col justify-end gap-2 rounded-sm border border-violet-500/20 bg-gradient-to-b from-violet-500/8 to-surface-2 p-3">
+            <Badge className="self-start" tone="accent">
+              GENERATE
+            </Badge>
+            <div className="grid gap-2">
+              <Button
+                className="h-11 w-full shadow-[0_0_28px_rgba(139,92,246,0.2)]"
+                disabled={busy || !prompt.trim()}
+                onClick={onGenerate}
+                type="button"
+              >
+                {busy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4" />
+                    Generate
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
       <ResizeHandle onMouseDown={onResizeStart} title="Resize prompt panel" />

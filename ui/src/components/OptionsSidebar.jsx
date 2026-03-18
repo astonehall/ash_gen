@@ -30,11 +30,11 @@ import { useLocalStorageState } from "../hooks/useLocalStorageState";
 function InfoRow({ label, value, tone = "neutral" }) {
   return (
     <div className="grid justify-items-start gap-1.5 rounded-sm border border-border bg-surface-0 px-2.5 py-2">
-      <span className="text-[11px] uppercase tracking-[0.16em] text-txt-3">
+      <span className="text-[10px] uppercase tracking-[0.16em] text-txt-3">
         {label}
       </span>
       <Badge
-        className="max-w-full text-left normal-case tracking-[0.08em]"
+        className="max-w-full text-left normal-case tracking-[0.04em]"
         tone={tone}
       >
         {value}
@@ -221,6 +221,9 @@ export function OptionsSidebar({
                 <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-200">
                   Options
                 </span>
+                <span className="text-[10px] uppercase tracking-[0.14em] text-txt-3">
+                  Runtime and tools
+                </span>
               </div>
             ) : null}
             <Button
@@ -238,7 +241,11 @@ export function OptionsSidebar({
               )}
             </Button>
           </div>
-          {isOpen ? <Badge tone="accent">Workspace tools</Badge> : null}
+          {isOpen ? (
+            <Badge className="self-start" tone="accent">
+              Workspace tools
+            </Badge>
+          ) : null}
         </div>
 
         {isOpen ? (
